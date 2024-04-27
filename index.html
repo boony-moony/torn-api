@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torn City API Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: #fff;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: #333;
+            color: white;
+        }
+        .logout-button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .logout-button:hover {
+            background-color: #d32f2f;
+        }
+        .content {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .box {
+            flex: 1;
+            padding: 20px;
+            background-color: #444;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .box h3 {
+            margin-top: 0;
+            color: #fff;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            background-color: #444;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #fff;
+        }
+        label {
+            font-weight: bold;
+            color: #fff;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #333;
+            color: #fff;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            margin-top: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="user-info" id="userInfo" style="display: none;"></div>
+        <div class="logout-button" id="logoutButton" style="display: none;" onclick="logout()">Logout</div>
+    </div>
+
+    <div class="login-container" id="loginContainer">
+        <h2>Login to Torn City API</h2>
+        <form>
+            <label for="apiKey">Enter your API Key:</label>
+            <input type="text" id="apiKey" required>
+            <button type="button" onclick="login()">Login</button>
+            <button type="button" onclick="getApiKey()">Get API Key</button>
+        </form>
+    </div>
+
+    <div class="content" id="content" style="display: none;">
+        <div class="box" id="battleStatsBox"></div>
+        <div class="box" id="netWorthBox"></div>
+        <div class="box" id="workStatsBox"></div>
+    </div>
+
+    <script>
+        function login() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (apiKey.trim() === '') {
+                alert('Please enter your API key.');
+                return;
+            }
+
+            localStorage.setItem('apiKey', apiKey);
+            showUserDetails();
+        }
+
+        function getApiKey() {
+            window.location.href = 'https://www.torn.com/preferences.php#tab=api';
+        }
+
+        function showUserDetails() {
+            const apiKey = localStorage.getItem('apiKey');
+            if (!apiKey) {
+                document.getElementById('loginContainer').style.display = 'block';
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('content').style.display = 'none';
+                document.getElementById('logoutButton').style.display = 'none';
+                return;
+            }
+
+            const profileUrl = `https://api.torn.com/user/?key=${apiKey}&comment=TornAPI&selections=profile`;
+            const battleStatsUrl = `https://api.torn.com/user/?key=${apiKey}&comment=TornAPI&selections=battlestats`;
+            const netWorthUrl = `https://api.torn.com/user/?key=${apiKey}&comment=TornAPI&selections=networth`;
+            const workStatsUrl = `https://api.torn.com/user/?key=${apiKey}&comment=TornAPI&selections=workstats`;
+
+            fetch(profileUrl)
+                .then(response => response.json())
+                .then(profileResponse => {
+                    document.getElementById('userInfo').innerHTML = `
+                        <p>Name: ${profileResponse.name}</p>
+                        <p>ID: ${profileResponse.player_id}</p>
+                    `;
+                    document.getElementById('userInfo').style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching user details.');
+                });
+
+            fetch(battleStatsUrl)
+                .then(response => response.json())
+                .then(battleStatsResponse => {
+                    document.getElementById('battleStatsBox').innerHTML = `
+                        <h3>Battle Stats</h3>
+                        <p>Strength: ${formatNumber(battleStatsResponse.strength)}</p>
+                        <p>Speed: ${formatNumber(battleStatsResponse.speed)}</p>
+                        <p>Dexterity: ${formatNumber(battleStatsResponse.dexterity)}</p>
+                        <p>Defense: ${formatNumber(battleStatsResponse.defense)}</p>
+                        <p>Total: ${formatNumber(battleStatsResponse.total)}</p>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching battle stats.');
+                });
+
+            fetch(netWorthUrl)
+                .then(response => response.json())
+                .then(netWorthResponse => {
+                    const netWorthDetails = netWorthResponse.networth;
+                    const netWorthHTML = `
+                        <h3>Net Worth</h3>
+                        <p>Total: ${formatNumber(netWorthDetails.total)}</p>
+                        <p>Wallet: ${formatNumber(netWorthDetails.wallet)}</p>
+                        <p>Items: ${formatNumber(netWorthDetails.items)}</p>
+                        <p>Points: ${formatNumber(netWorthDetails.points)}</p>
+                        <p>Cayman: ${formatNumber(netWorthDetails.cayman)}</p>
+                        <p>Vault: ${formatNumber(netWorthDetails.vault)}</p>
+                        <p>Piggybank: ${formatNumber(netWorthDetails.piggybank)}</p>
+                        <p>Displaycase: ${formatNumber(netWorthDetails.displaycase)}</p>
+                        <p>Bazaar: ${formatNumber(netWorthDetails.bazaar)}</p>
+                        <p>Trade: ${formatNumber(netWorthDetails.trade)}</p>
+                        <p>Itemmarket: ${formatNumber(netWorthDetails.itemmarket)}</p>
+                        <p>Properties: ${formatNumber(netWorthDetails.properties)}</p>
+                        <p>Stockmarket: ${formatNumber(netWorthDetails.stockmarket)}</p>
+                        <p>Auctionhouse: ${formatNumber(netWorthDetails.auctionhouse)}</p>
+                        <p>Company: ${formatNumber(netWorthDetails.company)}</p>
+                        <p>Bookie: ${formatNumber(netWorthDetails.bookie)}</p>
+                        <p>Enlistedcars: ${formatNumber(netWorthDetails.enlistedcars)}</p>
+                        <p>Loan: ${formatNumber(netWorthDetails.loan)}</p>
+                        <p>Unpaidfees: ${formatNumber(netWorthDetails.unpaidfees)}</p>
+                        <p>Parsetime: ${netWorthDetails.parsetime}</p>
+                    `;
+                    document.getElementById('netWorthBox').innerHTML = netWorthHTML;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching net worth.');
+                });
+
+            fetch(workStatsUrl)
+                .then(response => response.json())
+                .then(workStatsResponse => {
+                    document.getElementById('workStatsBox').innerHTML = `
+                        <h3>Work Stats</h3>
+                        <p>Manual Labor: ${formatNumber(workStatsResponse.manual_labor)}</p>
+                        <p>Intelligence: ${formatNumber(workStatsResponse.intelligence)}</p>
+                        <p>Endurance: ${formatNumber(workStatsResponse.endurance)}</p>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while fetching work stats.');
+                });
+
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('content').style.display = 'flex';
+            document.getElementById('logoutButton').style.display = 'block';
+        }
+
+        function logout() {
+            localStorage.removeItem('apiKey');
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('userInfo').style.display = 'none';
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('logoutButton').style.display = 'none';
+        }
+
+        // Format numbers with commas and periods for better readability
+        function formatNumber(number) {
+            return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        // Check if user is already logged in
+        showUserDetails();
+    </script>
+</body>
+</html>

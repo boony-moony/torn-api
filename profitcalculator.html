@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Profit Calculator</title>
+    <style>
+        /* CSS for styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        form {
+            margin-top: 20px;
+            text-align: center;
+        }
+        input[type="number"] {
+            width: 100px;
+            padding: 8px;
+            margin: 0 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Share Profit Calculator</h1>
+        <form id="shareForm">
+            <label for="numShares">Number of Shares:</label>
+            <input type="number" id="numShares" name="numShares" required>
+            <br>
+            <label for="sharePrice">Current Share Price ($):</label>
+            <input type="number" id="sharePrice" name="sharePrice" step="0.01" required>
+            <br>
+            <label for="increasePrice">Increase in Share Price ($):</label>
+            <input type="number" id="increasePrice" name="increasePrice" step="0.01" required>
+            <br>
+            <button type="button" onclick="calculateProfit()">Calculate Profit</button>
+        </form>
+        <div id="result" style="display: none;">
+            <h2>Result:</h2>
+            <p id="initialState"></p>
+            <p id="finalState"></p>
+            <p id="rawProfit"></p>
+            <p id="profit"></p>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for calculating profit
+        function calculateProfit() {
+            var numShares = parseFloat(document.getElementById('numShares').value);
+            var sharePrice = parseFloat(document.getElementById('sharePrice').value);
+            var increasePrice = parseFloat(document.getElementById('increasePrice').value);
+
+            var originalValue = numShares * sharePrice;
+            var newValue = numShares * (sharePrice + increasePrice);
+            var profit = newValue - originalValue;
+
+            var resultElement = document.getElementById('result');
+            var initialStateElement = document.getElementById('initialState');
+            var finalStateElement = document.getElementById('finalState');
+            var rawProfitElement = document.getElementById('rawProfit');
+            var profitElement = document.getElementById('profit');
+
+            initialStateElement.textContent = "Initial State: " + numShares + " shares at $" + sharePrice.toFixed(2) + " each.";
+            finalStateElement.textContent = "Final State: " + numShares + " shares at $" + (sharePrice + increasePrice).toFixed(2) + " each.";
+
+            rawProfitElement.textContent = "Raw Profit: $" + profit.toFixed(2); // Display raw profit
+
+            if (profit >= 0) {
+                if (profit >= 1000000000000) {
+                    profitElement.textContent = "Profit: $" + (profit / 1000000000000).toFixed(2) + " trillion";
+                } else if (profit >= 1000000000) {
+                    profitElement.textContent = "Profit: $" + (profit / 1000000000).toFixed(2) + " billion";
+                } else if (profit >= 1000000) {
+                    profitElement.textContent = "Profit: $" + (profit / 1000000).toFixed(2) + " million";
+                } else if (profit >= 1000) {
+                    profitElement.textContent = "Profit: $" + (profit / 1000).toFixed(2) + " thousand";
+                } else {
+                    profitElement.textContent = "Profit: $" + profit.toFixed(2);
+                }
+            } else {
+                profit = Math.abs(profit);
+                if (profit >= 1000000000000) {
+                    profitElement.textContent = "Loss: $" + (profit / 1000000000000).toFixed(2) + " trillion";
+                } else if (profit >= 1000000000) {
+                    profitElement.textContent = "Loss: $" + (profit / 1000000000).toFixed(2) + " billion";
+                } else if (profit >= 1000000) {
+                    profitElement.textContent = "Loss: $" + (profit / 1000000).toFixed(2) + " million";
+                } else if (profit >= 1000) {
+                    profitElement.textContent = "Loss: $" + (profit / 1000).toFixed(2) + " thousand";
+                } else {
+                    profitElement.textContent = "Loss: $" + profit.toFixed(2);
+                }
+            }
+
+            resultElement.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

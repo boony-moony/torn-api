@@ -146,19 +146,17 @@
             let numericValue = parseInput(rawValue);
             
             if (numericValue) {
-                input.value = numericValue.toLocaleString();  // Format number without commas
+                input.value = numericValue.toLocaleString();  // Format number with commas
             }
         }
 
         function handleInput(input) {
-            let rawValue = input.value.toUpperCase();
-            if (rawValue === "THEME") {
-                document.getElementById("themeMenu").classList.remove("hidden");
-                input.value = "";
-            }
+            let rawValue = input.value.trim().toUpperCase();
 
             // Autocomplete immediately after input
-            autoComplete(input);
+            if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
+                autoComplete(input);
+            }
         }
 
         function calculateProfit() {

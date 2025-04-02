@@ -28,6 +28,8 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -38,6 +40,16 @@
             background-color: var(--card-color);
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
         }
 
         input {
@@ -70,6 +82,10 @@
             padding: 15px;
             background-color: var(--card-color);
             border-radius: 8px;
+        }
+
+        .hidden {
+            display: none;
         }
 
         /* Theme Modal */
@@ -149,22 +165,6 @@
         input:checked + .slider:before {
             transform: translateX(24px);
         }
-
-        /* Theme Buttons */
-        .theme-options button {
-            margin-top: 10px;
-            padding: 8px;
-            background-color: var(--input-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text-color);
-            cursor: pointer;
-            width: 100%;
-            border-radius: 5px;
-        }
-
-        .theme-options button:hover {
-            opacity: 0.8;
-        }
     </style>
 </head>
 <body onload="loadTheme()">
@@ -194,7 +194,10 @@
         <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
+            <p>Transaction Fee: <span id="fee"></span></p>
+            <p>Shares Sold: <span id="soldShares"></span></p>
             <p>Profit/Loss: <span id="profit"></span></p>
+            <p>ROI: <span id="roi"></span></p>
         </div>
     </div>
 
@@ -212,42 +215,45 @@
                 </label>
                 <span> Light / Dark Mode</span>
             </div>
-
-            <!-- Theme Options -->
-            <div class="theme-options">
-                <button onclick="setTheme('default')">Default Theme</button>
-                <button onclick="setTheme('blue')">Blue Theme</button>
-                <button onclick="setTheme('red')">Red Theme</button>
-            </div>
         </div>
     </div>
 
     <script>
+        function calculateProfit() {
+            let invested = parseFloat(document.getElementById('moneyInvested').value) || 0;
+            let buyPrice = parseFloat(document.getElementById('sharePrice').value) || 0;
+            let sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+
+            if (!invested || !buyPrice || !sellPrice) {
+                alert("Enter valid numbers.");
+                return;
+            }
+
+            let shares = invested / buyPrice;
+            let fee = sellPrice * 0.001;
+            let finalSellPrice = sellPrice - fee;
+            let totalSold = shares * finalSellPrice;
+            let profit = totalSold - invested;
+            let roi = (profit / invested) * 100;
+
+            document.getElementById('totalInvested').textContent = `$${invested.toFixed(2)}`;
+            document.getElementById('fee').textContent = `$${fee.toFixed(2)} per share`;
+            document.getElementById('soldShares').textContent = shares.toFixed(2);
+            document.getElementById('profit').textContent = `$${profit.toFixed(2)}`;
+            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
+
+            document.getElementById('result').classList.remove('hidden');
+        }
+
         function toggleTheme() {
-            let theme = document.documentElement.getAttribute("data-theme");
-            let newTheme = theme === "light" ? "dark" : "light";
+            let newTheme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
             document.documentElement.setAttribute("data-theme", newTheme);
             localStorage.setItem("theme", newTheme);
-            document.getElementById("themeToggle").checked = newTheme === "light";
         }
 
-        function openThemeMenu() {
-            document.getElementById("themeModal").style.display = "flex";
-        }
-
-        function closeThemeMenu() {
-            document.getElementById("themeModal").style.display = "none";
-        }
-
-        function setTheme(color) {
-            alert("Theme " + color + " selected! (Implement actual theme change here)");
-        }
-
-        function loadTheme() {
-            let savedTheme = localStorage.getItem("theme") || "dark";
-            document.documentElement.setAttribute("data-theme", savedTheme);
-            document.getElementById("themeToggle").checked = savedTheme === "light";
-        }
+        function openThemeMenu() { document.getElementById("themeModal").style.display = "flex"; }
+        function closeThemeMenu() { document.getElementById("themeModal").style.display = "none"; }
+        function loadTheme() { document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || "dark"); }
     </script>
 
 </body>

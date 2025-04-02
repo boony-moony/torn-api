@@ -7,36 +7,39 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
-            --bg-color-dark: #1a202c;
-            --bg-color-light: #f7fafc;
-            --card-color-dark: #2d3748;
-            --card-color-light: #edf2f7;
-            --text-color-dark: #ffffff;
-            --text-color-light: #1a202c;
+            --bg-color: #1a202c;
+            --card-color: #2d3748;
+            --text-color: #ffffff;
             --button-color: #22c55e;
-            --input-bg-dark: #333;
-            --input-bg-light: #ffffff;
-            --input-border-dark: #555;
-            --input-border-light: #ddd;
+            --input-bg: #333;
+            --input-border: #555;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f7fafc;
+            --card-color: #ffffff;
+            --text-color: #2d3748;
+            --button-color: #16a34a;
+            --input-bg: #e2e8f0;
+            --input-border: #cbd5e1;
         }
 
         body {
-            background-color: var(--bg-color-dark);
-            color: var(--text-color-dark);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
             max-width: 600px;
             margin: 20px auto;
             padding: 20px;
-            background-color: var(--card-color-dark);
+            background-color: var(--card-color);
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
         }
 
         h1, h2 {
@@ -55,13 +58,13 @@
 
         input {
             padding: 10px;
-            background-color: var(--input-bg-dark);
-            color: white;
+            background-color: var(--input-bg);
+            color: var(--text-color);
             border-radius: 5px;
-            border: 1px solid var(--input-border-dark);
+            border: 1px solid var(--input-border);
             text-align: center;
             font-size: 16px;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         button {
@@ -82,7 +85,7 @@
         #result {
             margin-top: 20px;
             padding: 15px;
-            background-color: var(--card-color-dark);
+            background-color: var(--card-color);
             border-radius: 8px;
         }
 
@@ -90,23 +93,22 @@
             display: none;
         }
 
-        .theme-switch-wrapper {
+        /* Theme Toggle Switch */
+        .theme-toggle {
             display: flex;
-            justify-content: flex-end;
-            margin: 10px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .theme-switch {
+        .toggle-switch {
             position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 50px;
+            height: 25px;
         }
 
-        .theme-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
+        .toggle-switch input {
+            display: none;
         }
 
         .slider {
@@ -117,206 +119,104 @@
             right: 0;
             bottom: 0;
             background-color: #ccc;
-            transition: 0.4s;
-            border-radius: 34px;
+            transition: 0.3s;
+            border-radius: 25px;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
-            border-radius: 50%;
+            height: 18px;
+            width: 18px;
             left: 4px;
-            bottom: 4px;
+            bottom: 3.5px;
             background-color: white;
-            transition: 0.4s;
+            transition: 0.3s;
+            border-radius: 50%;
         }
 
         input:checked + .slider {
-            background-color: #22c55e;
+            background-color: #16a34a;
         }
 
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(24px);
         }
     </style>
 </head>
 <body onload="loadTheme()">
 
-    <div class="theme-switch-wrapper">
-        <label class="theme-switch">
-            <input type="checkbox" id="themeToggle" onclick="toggleTheme()">
-            <span class="slider"></span>
-        </label>
-    </div>
-
     <div class="container">
         <h1>Share Profit Calculator</h1>
+
+        <!-- Theme Toggle Button -->
+        <div class="theme-toggle">
+            <label class="toggle-switch">
+                <input type="checkbox" id="themeToggle" onclick="toggleTheme()">
+                <span class="slider"></span>
+            </label>
+        </div>
+
         <form id="shareForm">
             <div class="form-group">
                 <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested" oninput="handleInput(this)" onblur="autoComplete(this)">
+                <input type="text" id="moneyInvested">
             </div>
             <div class="form-group">
                 <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice" oninput="handleInput(this)" onblur="autoComplete(this)">
+                <input type="text" id="sharePrice">
             </div>
             <div class="form-group">
                 <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice" oninput="handleInput(this)" onblur="autoComplete(this)">
+                <input type="text" id="sellPrice">
             </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
-        
+
         <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
-            <p>Money Invested: <span id="investedAmount"></span></p>
-            <p>Price per Share: <span id="boughtPrice"></span></p>
-            <hr>
-            <p>Transaction Fee (0.1% per share): <span id="fee" class="text-yellow-500"></span></p>
-            <p>Shares Sold: <span id="soldShares"></span></p>
-            <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
-            <p>Profit/Loss: <span id="profit" class="text-green-500"></span></p>
-            <p>ROI: <span id="roi" class="text-green-500"></span></p>
+            <p>Profit/Loss: <span id="profit"></span></p>
         </div>
     </div>
 
     <script>
-        function formatNumber(num) {
-            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-            return num.toFixed(2);
+        function toggleTheme() {
+            let theme = document.documentElement.getAttribute("data-theme");
+            let newTheme = theme === "light" ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+
+            // Update toggle switch state
+            document.getElementById("themeToggle").checked = newTheme === "light";
         }
 
-        function parseInput(value) {
-            value = value.trim().toUpperCase();
-
-            value = value.replace(/,/g, '');
-
-            const regex = /^(\d*\.?\d+)([KMBT])?$/;
-            const match = value.match(regex);
-
-            if (match) {
-                let number = parseFloat(match[1]);
-                let multiplier = 1;
-
-                if (match[2] === 'T') multiplier = 1e12;
-                else if (match[2] === 'B') multiplier = 1e9;
-                else if (match[2] === 'M') multiplier = 1e6;
-                else if (match[2] === 'K') multiplier = 1e3;
-
-                return number * multiplier;
-            }
-
-            return 0;
-        }
-
-        function autoComplete(input) {
-            let rawValue = input.value;
-            let numericValue = parseInput(rawValue);
-            
-            if (numericValue) {
-                input.value = numericValue.toLocaleString();
-            }
-        }
-
-        function handleInput(input) {
-            let rawValue = input.value.trim().toUpperCase();
-
-            if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
-                autoComplete(input);
-            }
+        function loadTheme() {
+            let savedTheme = localStorage.getItem("theme") || "dark";
+            document.documentElement.setAttribute("data-theme", savedTheme);
+            document.getElementById("themeToggle").checked = savedTheme === "light";
         }
 
         function calculateProfit() {
-            let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
-            let sharePrice = parseInput(document.getElementById('sharePrice').value);
-            let sellPrice = parseInput(document.getElementById('sellPrice').value);
+            let moneyInvested = parseFloat(document.getElementById('moneyInvested').value);
+            let sharePrice = parseFloat(document.getElementById('sharePrice').value);
+            let sellPrice = parseFloat(document.getElementById('sellPrice').value);
 
-            if (!moneyInvested || !sharePrice || !sellPrice) {
+            if (isNaN(moneyInvested) || isNaN(sharePrice) || isNaN(sellPrice)) {
                 alert("Please enter valid numbers.");
                 return;
             }
 
             let totalInvested = moneyInvested;
-            let fee = sellPrice * 0.001;
-            let finalSellPrice = sellPrice - fee;
-            let sharesSold = moneyInvested / sharePrice;
-            let totalSold = sharesSold * finalSellPrice;
-            let profit = totalSold - totalInvested;
-            let roi = (profit / totalInvested) * 100;
+            let profit = (sellPrice - sharePrice) * (moneyInvested / sharePrice);
 
-            document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
-            document.getElementById('investedAmount').textContent = formatNumber(moneyInvested);
-            document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
-            document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
-            document.getElementById('soldShares').textContent = formatNumber(sharesSold);
-            document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
-            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
-            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
-
+            document.getElementById('totalInvested').textContent = `$${totalInvested.toFixed(2)}`;
+            document.getElementById('profit').textContent = `$${profit.toFixed(2)}`;
             document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
-            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
 
             document.getElementById('result').classList.remove('hidden');
         }
-
-        function loadTheme() {
-            const isDark = localStorage.getItem('isDark') === 'true';
-            const themeToggle = document.getElementById('themeToggle');
-            themeToggle.checked = isDark;
-            applyTheme(isDark);
-        }
-
-        function toggleTheme() {
-            const isDark = document.getElementById('themeToggle').checked;
-            localStorage.setItem('isDark', isDark);
-            applyTheme(isDark);
-        }
-
-        function applyTheme(isDark) {
-            if (isDark) {
-                document.documentElement.style.setProperty('--bg-color-dark', '#1a202c');
-                document.documentElement.style.setProperty('--bg-color-light', '#f7fafc');
-                document.documentElement.style.setProperty('--card-color-dark', '#2d3748');
-                document.documentElement.style.setProperty('--card-color-light', '#edf2f7');
-                document.documentElement.style.setProperty('--text-color-dark', '#ffffff');
-                document.documentElement.style.setProperty('--text-color-light', '#1a202c');
-                document.documentElement.style.setProperty('--input-bg-dark', '#333');
-                document.documentElement.style.setProperty('--input-bg-light', '#ffffff');
-                document.documentElement.style.setProperty('--input-border-dark', '#555');
-                document.documentElement.style.setProperty('--input-border-light', '#ddd');
-                document.body.style.backgroundColor = 'var(--bg-color-dark)';
-                document.body.style.color = 'var(--text-color-dark)';
-                document.querySelector('.container').style.backgroundColor = 'var(--card-color-dark)';
-                document.querySelectorAll('input').forEach(input => {
-                    input.style.backgroundColor = 'var(--input-bg-dark)';
-                    input.style.borderColor = 'var(--input-border-dark)';
-                });
-            } else {
-                document.documentElement.style.setProperty('--bg-color-dark', '#f7fafc');
-                document.documentElement.style.setProperty('--bg-color-light', '#1a202c');
-                document.documentElement.style.setProperty('--card-color-dark', '#edf2f7');
-                document.documentElement.style.setProperty('--card-color-light', '#2d3748');
-                document.documentElement.style.setProperty('--text-color-dark', '#1a202c');
-                document.documentElement.style.setProperty('--text-color-light', '#ffffff');
-                document.documentElement.style.setProperty('--input-bg-dark', '#ffffff');
-                document.documentElement.style.setProperty('--input-bg-light', '#333');
-                document.documentElement.style.setProperty('--input-border-dark', '#ddd');
-                document.documentElement.style.setProperty('--input-border-light', '#555');
-                document.body.style.backgroundColor = 'var(--bg-color-light)';
-                document.body.style.color = 'var(--text-color-light)';
-                document.querySelector('.container').style.backgroundColor = 'var(--card-color-light)';
-                document.querySelectorAll('input').forEach(input => {
-                    input.style.backgroundColor = 'var(--input-bg-light)';
-                    input.style.borderColor = 'var(--input-border-light)';
-                });
-            }
-        }
     </script>
+
 </body>
 </html>

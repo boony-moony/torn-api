@@ -305,4 +305,12 @@
             document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
             document.getElementById('soldShares').textContent = formatNumber(sharesSold);
             document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
-            document.getElementById('profit').text
+            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
+            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
+
+            document.getElementById('result').classList.remove('hidden');
+        }
+    </script>
+
+</body>
+</html>

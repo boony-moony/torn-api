@@ -80,6 +80,15 @@
         .hidden {
             display: none;
         }
+        .profit {
+            color: #22c55e;
+        }
+        .loss {
+            color: #ef4444;
+        }
+        .fee {
+            color: #facc15;
+        }
     </style>
 </head>
 <body onload="loadTheme()">
@@ -108,7 +117,7 @@
             <p>Shares (Bought): <span id="boughtShares"></span></p>
             <p>Price per Share: <span id="boughtPrice"></span></p>
             <hr>
-            <p>Transaction Fee (0.1%): <span id="fee"></span></p>
+            <p>Transaction Fee (0.1%): <span id="fee" class="fee"></span></p>
             <p>Shares (Sold): <span id="soldShares"></span></p>
             <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
             <p>Profit/Loss: <span id="profit"></span></p>
@@ -180,7 +189,18 @@
             document.getElementById('fee').textContent = `$${formatNumber(fee)} per share`;
             document.getElementById('soldShares').textContent = formatNumber(numShares);
             document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
-            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
+            
+            // Apply color changes
+            if (profit > 0) {
+                document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
+                document.getElementById('profit').classList.add('profit');
+                document.getElementById('profit').classList.remove('loss');
+            } else {
+                document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
+                document.getElementById('profit').classList.add('loss');
+                document.getElementById('profit').classList.remove('profit');
+            }
+
             document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
 
             document.getElementById('result').classList.remove('hidden');

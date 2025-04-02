@@ -14,25 +14,13 @@
             --input-bg: #333;
             --input-border: #555;
         }
-
-        [data-theme="light"] {
-            --bg-color: #f7fafc;
-            --card-color: #ffffff;
-            --text-color: #2d3748;
-            --button-color: #16a34a;
-            --input-bg: #e2e8f0;
-            --input-border: #cbd5e1;
-        }
-
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            transition: background-color 0.3s, color 0.3s;
         }
-
         .container {
             max-width: 600px;
             margin: 20px auto;
@@ -41,27 +29,26 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
-
         h1, h2 {
             text-align: center;
         }
-
+        form {
+            margin-top: 20px;
+        }
         .form-group {
             display: flex;
             flex-direction: column;
             margin-bottom: 10px;
         }
-
         input {
             padding: 10px;
             background-color: var(--input-bg);
-            color: var(--text-color);
+            color: white;
             border-radius: 5px;
             border: 1px solid var(--input-border);
             text-align: center;
             font-size: 16px;
         }
-
         button {
             width: 100%;
             padding: 10px;
@@ -72,98 +59,17 @@
             cursor: pointer;
             font-size: 16px;
         }
-
         button:hover {
             opacity: 0.8;
         }
-
         #result {
             margin-top: 20px;
             padding: 15px;
             background-color: var(--card-color);
             border-radius: 8px;
         }
-
         .hidden {
             display: none;
-        }
-
-        /* Theme Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: var(--card-color);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            width: 300px;
-        }
-
-        .close-btn {
-            cursor: pointer;
-            color: var(--text-color);
-            float: right;
-            font-size: 20px;
-        }
-
-        /* Toggle Switch */
-        .theme-toggle {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 10px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 25px;
-        }
-
-        .toggle-switch input {
-            display: none;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: 0.3s;
-            border-radius: 25px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 4px;
-            bottom: 3.5px;
-            background-color: white;
-            transition: 0.3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: #16a34a;
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(24px);
         }
     </style>
 </head>
@@ -171,89 +77,121 @@
 
     <div class="container">
         <h1>Share Profit Calculator</h1>
-
-        <!-- Open Theme Menu Button -->
-        <button onclick="openThemeMenu()">Select Theme</button>
-
         <form id="shareForm">
             <div class="form-group">
                 <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested">
+                <input type="text" id="moneyInvested" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice">
+                <input type="text" id="sharePrice" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice">
+                <input type="text" id="sellPrice" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
-
+        
         <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
-            <p>Transaction Fee: <span id="fee"></span></p>
+            <p>Money Invested: <span id="investedAmount"></span></p>
+            <p>Price per Share: <span id="boughtPrice"></span></p>
+            <hr>
+            <p>Transaction Fee (0.1% per share): <span id="fee" class="text-yellow-500"></span></p>
             <p>Shares Sold: <span id="soldShares"></span></p>
-            <p>Profit/Loss: <span id="profit"></span></p>
-            <p>ROI: <span id="roi"></span></p>
-        </div>
-    </div>
-
-    <!-- Theme Selection Modal -->
-    <div id="themeModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeThemeMenu()">&times;</span>
-            <h2>Select Theme</h2>
-
-            <!-- Light/Dark Mode Toggle -->
-            <div class="theme-toggle">
-                <label class="toggle-switch">
-                    <input type="checkbox" id="themeToggle" onclick="toggleTheme()">
-                    <span class="slider"></span>
-                </label>
-                <span> Light / Dark Mode</span>
-            </div>
+            <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
+            <p>Profit/Loss: <span id="profit" class="text-green-500"></span></p>
+            <p>ROI: <span id="roi" class="text-green-500"></span></p>
         </div>
     </div>
 
     <script>
-        function calculateProfit() {
-            let invested = parseFloat(document.getElementById('moneyInvested').value) || 0;
-            let buyPrice = parseFloat(document.getElementById('sharePrice').value) || 0;
-            let sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+        function formatNumber(num) {
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+            return num.toFixed(2);
+        }
 
-            if (!invested || !buyPrice || !sellPrice) {
-                alert("Enter valid numbers.");
+        function parseInput(value) {
+            value = value.trim().toUpperCase();
+
+            // Remove commas if they exist
+            value = value.replace(/,/g, '');
+
+            // Match numeric part and suffix (K, M, B, T) with optional decimal
+            const regex = /^(\d*\.?\d+)([KMBT])?$/;
+            const match = value.match(regex);
+
+            if (match) {
+                let number = parseFloat(match[1]);
+                let multiplier = 1;
+
+                if (match[2] === 'T') multiplier = 1e12;
+                else if (match[2] === 'B') multiplier = 1e9;
+                else if (match[2] === 'M') multiplier = 1e6;
+                else if (match[2] === 'K') multiplier = 1e3;
+
+                return number * multiplier;
+            }
+
+            return 0;  // Default if the input does not match
+        }
+
+        function autoComplete(input) {
+            let rawValue = input.value;
+            let numericValue = parseInput(rawValue);
+            
+            if (numericValue) {
+                input.value = numericValue.toLocaleString();  // Format number with commas
+            }
+        }
+
+        function handleInput(input) {
+            let rawValue = input.value.trim().toUpperCase();
+
+            // Autocomplete immediately after input
+            if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
+                autoComplete(input);
+            }
+        }
+
+        function calculateProfit() {
+            let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
+            let sharePrice = parseInput(document.getElementById('sharePrice').value);
+            let sellPrice = parseInput(document.getElementById('sellPrice').value);
+
+            if (!moneyInvested || !sharePrice || !sellPrice) {
+                alert("Please enter valid numbers.");
                 return;
             }
 
-            let shares = invested / buyPrice;
+            let totalInvested = moneyInvested;
             let fee = sellPrice * 0.001;
             let finalSellPrice = sellPrice - fee;
-            let totalSold = shares * finalSellPrice;
-            let profit = totalSold - invested;
-            let roi = (profit / invested) * 100;
+            let sharesSold = moneyInvested / sharePrice;
+            let totalSold = sharesSold * finalSellPrice;
+            let profit = totalSold - totalInvested;
+            let roi = (profit / totalInvested) * 100;
 
-            document.getElementById('totalInvested').textContent = `$${invested.toFixed(2)}`;
-            document.getElementById('fee').textContent = `$${fee.toFixed(2)} per share`;
-            document.getElementById('soldShares').textContent = shares.toFixed(2);
-            document.getElementById('profit').textContent = `$${profit.toFixed(2)}`;
+            document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
+            document.getElementById('investedAmount').textContent = formatNumber(moneyInvested);
+            document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
+            document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
+            document.getElementById('soldShares').textContent = formatNumber(sharesSold);
+            document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
+            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
             document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
+
+            // Profit/Loss Color Adjustment
+            document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
+            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
 
             document.getElementById('result').classList.remove('hidden');
         }
-
-        function toggleTheme() {
-            let newTheme = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
-            document.documentElement.setAttribute("data-theme", newTheme);
-            localStorage.setItem("theme", newTheme);
-        }
-
-        function openThemeMenu() { document.getElementById("themeModal").style.display = "flex"; }
-        function closeThemeMenu() { document.getElementById("themeModal").style.display = "none"; }
-        function loadTheme() { document.documentElement.setAttribute("data-theme", localStorage.getItem("theme") || "dark"); }
     </script>
 
 </body>

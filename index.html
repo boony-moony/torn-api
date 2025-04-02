@@ -29,6 +29,26 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
+        h1, h2 {
+            text-align: center;
+        }
+        form {
+            margin-top: 20px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+        }
+        input {
+            padding: 10px;
+            background-color: var(--input-bg);
+            color: white;
+            border-radius: 5px;
+            border: 1px solid var(--input-border);
+            text-align: center;
+            font-size: 16px;
+        }
         button {
             width: 100%;
             padding: 10px;
@@ -38,11 +58,20 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            margin-bottom: 10px;
         }
         button:hover {
             opacity: 0.8;
         }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--card-color);
+            border-radius: 8px;
+        }
+        .hidden {
+            display: none;
+        }
+        /* Added Theme Menu Styles */
         .theme-menu {
             display: none;
             position: fixed;
@@ -85,62 +114,142 @@
 <body onload="loadTheme()">
 
     <div class="container">
-        <button onclick="toggleThemeMenu()">Change Theme</button>
         <h1>Share Profit Calculator</h1>
         <form id="shareForm">
             <div class="form-group">
                 <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested">
+                <input type="text" id="moneyInvested" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice">
+                <input type="text" id="sharePrice" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice">
+                <input type="text" id="sellPrice" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
-
+        
         <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
-            <p>Profit/Loss: <span id="profit"></span></p>
-            <p>ROI: <span id="roi"></span></p>
+            <p>Money Invested: <span id="investedAmount"></span></p>
+            <p>Price per Share: <span id="boughtPrice"></span></p>
+            <hr>
+            <p>Transaction Fee (0.1% per share): <span id="fee" class="text-yellow-500"></span></p>
+            <p>Shares Sold: <span id="soldShares"></span></p>
+            <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
+            <p>Profit/Loss: <span id="profit" class="text-green-500"></span></p>
+            <p>ROI: <span id="roi" class="text-green-500"></span></p>
         </div>
     </div>
 
-    <div class="overlay" id="overlay" onclick="toggleThemeMenu()"></div>
+    <script>
+        function formatNumber(num) {
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+            return num.toFixed(2);
+        }
 
-    <div id="themeMenu" class="theme-menu">
+        function parseInput(value) {
+            value = value.trim().toUpperCase();
+            // Remove commas if they exist
+            value = value.replace(/,/g, '');
+            // Match numeric part and suffix (K, M, B, T) with optional decimal
+            const regex = /^(\d*\.?\d+)([KMBT])?$/;
+            const match = value.match(regex);
+            if (match) {
+                let number = parseFloat(match[1]);
+                let multiplier = 1;
+                if (match[2] === 'T') multiplier = 1e12;
+                else if (match[2] === 'B') multiplier = 1e9;
+                else if (match[2] === 'M') multiplier = 1e6;
+                else if (match[2] === 'K') multiplier = 1e3;
+                return number * multiplier;
+            }
+            return 0;  // Default if the input does not match
+        }
+
+        function autoComplete(input) {
+            let rawValue = input.value;
+            let numericValue = parseInput(rawValue);
+            if (numericValue) {
+                input.value = numericValue.toLocaleString();  // Format number with commas
+            }
+        }
+
+        function handleInput(input) {
+            let rawValue = input.value.trim().toUpperCase();
+            // Autocomplete immediately after input
+            if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
+                autoComplete(input);
+            }
+        }
+
+        function calculateProfit() {
+            let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
+            let sharePrice = parseInput(document.getElementById('sharePrice').value);
+            let sellPrice = parseInput(document.getElementById('sellPrice').value);
+            if (!moneyInvested || !sharePrice || !sellPrice) {
+                alert("Please enter valid numbers.");
+                return;
+            }
+            let totalInvested = moneyInvested;
+            let fee = sellPrice * 0.001;
+            let finalSellPrice = sellPrice - fee;
+            let sharesSold = moneyInvested / sharePrice;
+            let totalSold = sharesSold * finalSellPrice;
+            let profit = totalSold - totalInvested;
+            let roi = (profit / totalInvested) * 100;
+            document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
+            document.getElementById('investedAmount').textContent = formatNumber(moneyInvested);
+            document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
+            document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
+            document.getElementById('soldShares').textContent = formatNumber(sharesSold);
+            document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
+            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
+            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
+            // Profit/Loss Color Adjustment
+            document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
+            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
+            document.getElementById('result').classList.remove('hidden');
+        }
+    </script>
+
+    <!-- Theme Code (Added without altering the rest of your script) -->
+    <div class="overlay" id="overlay" onclick="toggleThemeMenu()" style="display:none;"></div>
+    <div id="themeMenu" class="theme-menu" style="display:none;">
         <h2>Select Theme</h2>
         <div class="theme-option" onclick="setTheme('dark')">Dark Mode</div>
         <div class="theme-option" onclick="setTheme('blue')">Blue Mode</div>
         <div class="theme-option" onclick="setTheme('green')">Green Mode</div>
         <div class="theme-option" onclick="setTheme('red')">Red Mode</div>
         <div class="theme-option" onclick="setTheme('sunset')">Sunset Mode</div>
-
         <div class="theme-divider"></div>
-
         <div class="theme-option" onclick="setTheme('light')">Light Mode</div>
         <div class="theme-option" onclick="setTheme('blue-light')">Blue Light Mode</div>
         <div class="theme-option" onclick="setTheme('green-light')">Green Light Mode</div>
         <div class="theme-option" onclick="setTheme('red-light')">Red Light Mode</div>
     </div>
-
+    <button onclick="toggleThemeMenu()" style="position:fixed;bottom:20px;right:20px;padding:10px 20px;">Change Theme</button>
     <script>
         function toggleThemeMenu() {
-            const menu = document.getElementById('themeMenu');
-            const overlay = document.getElementById('overlay');
-            const isVisible = menu.style.display === 'block';
-
-            menu.style.display = isVisible ? 'none' : 'block';
-            overlay.style.display = isVisible ? 'none' : 'block';
+            var menu = document.getElementById('themeMenu');
+            var overlay = document.getElementById('overlay');
+            if (menu.style.display === "none") {
+                menu.style.display = "block";
+                overlay.style.display = "block";
+            } else {
+                menu.style.display = "none";
+                overlay.style.display = "none";
+            }
         }
 
         function setTheme(theme) {
-            const themes = {
+            var themes = {
                 dark: { bg: "#1a202c", card: "#2d3748", text: "#ffffff", button: "#22c55e" },
                 blue: { bg: "#0d47a1", card: "#1976d2", text: "#ffffff", button: "#64b5f6" },
                 green: { bg: "#1b5e20", card: "#388e3c", text: "#ffffff", button: "#66bb6a" },
@@ -151,40 +260,21 @@
                 "green-light": { bg: "#e8f5e9", card: "#c8e6c9", text: "#1b5e20", button: "#66bb6a" },
                 "red-light": { bg: "#ffebee", card: "#ffcdd2", text: "#b71c1c", button: "#e57373" }
             };
-
-            const selected = themes[theme];
+            var selected = themes[theme];
             document.documentElement.style.setProperty("--bg-color", selected.bg);
             document.documentElement.style.setProperty("--card-color", selected.card);
             document.documentElement.style.setProperty("--text-color", selected.text);
             document.documentElement.style.setProperty("--button-color", selected.button);
-
             localStorage.setItem("theme", theme);
             toggleThemeMenu();
         }
 
         function loadTheme() {
-            const theme = localStorage.getItem("theme") || "dark";
+            var theme = localStorage.getItem("theme") || "dark";
             setTheme(theme);
         }
-
-        function calculateProfit() {
-            let invested = parseFloat(document.getElementById('moneyInvested').value) || 0;
-            let buyPrice = parseFloat(document.getElementById('sharePrice').value) || 0;
-            let sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
-
-            if (!invested || !buyPrice || !sellPrice) return alert("Enter valid numbers");
-
-            let shares = invested / buyPrice;
-            let totalSold = shares * sellPrice;
-            let profit = totalSold - invested;
-            let roi = (profit / invested) * 100;
-
-            document.getElementById('totalInvested').textContent = `$${invested.toFixed(2)}`;
-            document.getElementById('profit').textContent = `$${profit.toFixed(2)}`;
-            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
-            document.getElementById('result').classList.remove('hidden');
-        }
     </script>
+    <!-- End Theme Code -->
 
 </body>
 </html>

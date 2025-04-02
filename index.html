@@ -1,198 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Share Profit Calculator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        :root {
-            --bg-color: #1a202c;
-            --card-color: #2d3748;
-            --text-color: #ffffff;
-            --button-color: #22c55e;
-            --input-bg: #333;
-            --input-border: #555;
-        }
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: var(--card-color);
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-        h1, h2 {
-            text-align: center;
-        }
-        form {
-            margin-top: 20px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px;
-        }
-        input {
-            padding: 10px;
-            background-color: var(--input-bg);
-            color: white;
-            border-radius: 5px;
-            border: 1px solid var(--input-border);
-            text-align: center;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: var(--button-color);
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            opacity: 0.8;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: var(--card-color);
-            border-radius: 8px;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
-</head>
-<body onload="loadTheme()">
+<script>
+    function formatNumber(num) {
+        if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+        if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+        if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+        if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+        return num.toFixed(2);
+    }
 
-    <div class="container">
-        <h1>Share Profit Calculator</h1>
-        <form id="shareForm">
-            <div class="form-group">
-                <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested" oninput="handleInput(this)" onblur="autoComplete(this)">
-            </div>
-            <div class="form-group">
-                <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice" oninput="handleInput(this)" onblur="autoComplete(this)">
-            </div>
-            <div class="form-group">
-                <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice" oninput="handleInput(this)" onblur="autoComplete(this)">
-            </div>
-            <button type="button" onclick="calculateProfit()">Calculate</button>
-        </form>
+    function parseInput(value) {
+        value = value.trim().toUpperCase();
+
+        // Remove commas if they exist
+        value = value.replace(/,/g, '');
+
+        // Match numeric part and suffix (K, M, B, T) with optional decimal
+        const regex = /^(\d*\.?\d+)([KMBT])?$/;
+        const match = value.match(regex);
+
+        if (match) {
+            let number = parseFloat(match[1]);
+            let multiplier = 1;
+
+            if (match[2] === 'T') multiplier = 1e12;
+            else if (match[2] === 'B') multiplier = 1e9;
+            else if (match[2] === 'M') multiplier = 1e6;
+            else if (match[2] === 'K') multiplier = 1e3;
+
+            return number * multiplier;
+        }
+
+        return 0;  // Default if the input does not match
+    }
+
+    function autoComplete(input) {
+        let rawValue = input.value;
+        let numericValue = parseInput(rawValue);
         
-        <div id="result" class="hidden">
-            <h2>Results</h2>
-            <p>Total Invested: <span id="totalInvested"></span></p>
-            <p>Money Invested: <span id="investedAmount"></span></p>
-            <p>Price per Share: <span id="boughtPrice"></span></p>
-            <hr>
-            <p>Transaction Fee (0.1% per share): <span id="fee" class="text-yellow-500"></span></p>
-            <p>Shares Sold: <span id="soldShares"></span></p>
-            <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
-            <p>Profit/Loss: <span id="profit" class="text-green-500"></span></p>
-            <p>ROI: <span id="roi" class="text-green-500"></span></p>
-        </div>
-    </div>
+        if (numericValue) {
+            input.value = numericValue.toLocaleString();  // Format number with commas
+        }
+    }
 
-    <script>
-        function formatNumber(num) {
-            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-            return num.toFixed(2);
+    function handleInput(input) {
+        let rawValue = input.value.trim().toUpperCase();
+
+        // Autocomplete immediately after input
+        if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
+            autoComplete(input);
+        }
+    }
+
+    function calculateProfit() {
+        let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
+        let sharePrice = parseInput(document.getElementById('sharePrice').value);
+        let sellPrice = parseInput(document.getElementById('sellPrice').value);
+
+        if (!moneyInvested || !sharePrice || !sellPrice) {
+            alert("Please enter valid numbers.");
+            return;
         }
 
-        function parseInput(value) {
-            value = value.trim().toUpperCase();
+        let totalInvested = moneyInvested;
 
-            // Remove commas if they exist
-            value = value.replace(/,/g, '');
+        // Fee per share is 0.1% of the selling price
+        let feePerShare = sellPrice * 0.001;
 
-            // Match numeric part and suffix (K, M, B, T) with optional decimal
-            const regex = /^(\d*\.?\d+)([KMBT])?$/;
-            const match = value.match(regex);
+        // Calculate how many shares you can buy
+        let sharesBought = moneyInvested / sharePrice;
 
-            if (match) {
-                let number = parseFloat(match[1]);
-                let multiplier = 1;
+        // Total transaction fee for all shares sold
+        let totalFee = feePerShare * sharesBought;
 
-                if (match[2] === 'T') multiplier = 1e12;
-                else if (match[2] === 'B') multiplier = 1e9;
-                else if (match[2] === 'M') multiplier = 1e6;
-                else if (match[2] === 'K') multiplier = 1e3;
+        // Final selling price per share after fee
+        let finalSellPrice = sellPrice - feePerShare;
 
-                return number * multiplier;
-            }
+        // Total amount from selling all shares
+        let totalSold = sharesBought * finalSellPrice;
 
-            return 0;  // Default if the input does not match
-        }
+        // Profit is the total amount from selling minus the total invested
+        let profit = totalSold - totalInvested;
 
-        function autoComplete(input) {
-            let rawValue = input.value;
-            let numericValue = parseInput(rawValue);
-            
-            if (numericValue) {
-                input.value = numericValue.toLocaleString();  // Format number with commas
-            }
-        }
+        // ROI calculation: profit divided by the total invested, times 100 to get percentage
+        let roi = (profit / totalInvested) * 100;
 
-        function handleInput(input) {
-            let rawValue = input.value.trim().toUpperCase();
+        // Update the results section with the calculations
+        document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
+        document.getElementById('investedAmount').textContent = formatNumber(moneyInvested);
+        document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
+        document.getElementById('fee').textContent = `${formatNumber(feePerShare)} per share`;
+        document.getElementById('soldShares').textContent = formatNumber(sharesBought);
+        document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
+        document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
+        document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
 
-            // Autocomplete immediately after input
-            if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
-                autoComplete(input);
-            }
-        }
+        // Adjust the colors for profit/loss and ROI
+        document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
+        document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
 
-        function calculateProfit() {
-            let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
-            let sharePrice = parseInput(document.getElementById('sharePrice').value);
-            let sellPrice = parseInput(document.getElementById('sellPrice').value);
-
-            if (!moneyInvested || !sharePrice || !sellPrice) {
-                alert("Please enter valid numbers.");
-                return;
-            }
-
-            let totalInvested = moneyInvested;
-            let fee = sellPrice * 0.001;
-            let finalSellPrice = sellPrice - fee;
-            let sharesSold = moneyInvested / sharePrice;
-            let totalSold = sharesSold * finalSellPrice;
-            let profit = totalSold - totalInvested;
-            let roi = (profit / totalInvested) * 100;
-
-            document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
-            document.getElementById('investedAmount').textContent = formatNumber(moneyInvested);
-            document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
-            document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
-            document.getElementById('soldShares').textContent = formatNumber(sharesSold);
-            document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
-            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
-            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
-
-            // Profit/Loss Color Adjustment
-            document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
-            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
-
-            document.getElementById('result').classList.remove('hidden');
-        }
-    </script>
-
-</body>
-</html>
+        // Show the results section
+        document.getElementById('result').classList.remove('hidden');
+    }
+</script>

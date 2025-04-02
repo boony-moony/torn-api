@@ -152,23 +152,32 @@
         }
 
         function parseInput(value) {
-            value = value.toUpperCase().trim();
-            let multiplier = 1;
-            
-            if (value.endsWith('T')) multiplier = 1e12;
-            else if (value.endsWith('B')) multiplier = 1e9;
-            else if (value.endsWith('M')) multiplier = 1e6;
-            else if (value.endsWith('K')) multiplier = 1e3;
+            value = value.trim().toUpperCase();
 
-            return parseFloat(value.replace(/[KMBT]/, '')) * multiplier || 0;
+            // Match numeric part and suffix (K, M, B, T) with optional decimal
+            const regex = /^(\d*\.?\d+)([KMBT])?$/;
+            const match = value.match(regex);
+
+            if (match) {
+                let number = parseFloat(match[1]);
+                let multiplier = 1;
+
+                if (match[2] === 'T') multiplier = 1e12;
+                else if (match[2] === 'B') multiplier = 1e9;
+                else if (match[2] === 'M') multiplier = 1e6;
+                else if (match[2] === 'K') multiplier = 1e3;
+
+                return number * multiplier;
+            }
+
+            return 0;  // Default if the input does not match
         }
 
         function autoComplete(input) {
             let rawValue = input.value;
-            let lastChar = rawValue.charAt(rawValue.length - 1).toUpperCase();
-
-            if (['K', 'M', 'B', 'T'].includes(lastChar)) {
-                let numericValue = parseInput(rawValue);
+            let numericValue = parseInput(rawValue);
+            
+            if (numericValue) {
                 input.value = numericValue.toLocaleString();
             }
         }

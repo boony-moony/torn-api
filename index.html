@@ -28,7 +28,7 @@
             margin-top: 20px;
             text-align: center;
         }
-        input[type="number"], input[type="text"] {
+        input[type="number"] {
             width: 100px;
             padding: 8px;
             margin: 5px;
@@ -48,11 +48,11 @@
         button:hover {
             background-color: #45a049;
         }
-        #result, #dashboard {
+        #result, #feeDisplay {
             margin-top: 20px;
-            display: none;
+            text-align: center;
         }
-        #investmentAdvice {
+        .highlight {
             font-weight: bold;
             color: #ffeb3b;
         }
@@ -61,20 +61,9 @@
 <body>
     <div class="container">
         <h1>Share Profit Calculator</h1>
-        
-        <!-- Login Section -->
-        <div id="loginSection">
-            <label for="apiKey">Enter Torn API Key:</label>
-            <input type="text" id="apiKey" placeholder="Your API Key">
-            <button onclick="loginUser()">Login</button>
-        </div>
 
-        <!-- Dashboard (Hidden initially) -->
-        <div id="dashboard">
-            <h2>Welcome, <span id="userName"></span>!</h2>
-            <p>Your Networth: <span id="userNetworth">$0</span></p>
-            <p id="investmentAdvice"></p>
-        </div>
+        <!-- Always Visible Fee Display -->
+        <p id="feeDisplay">Transaction Fee: <span class="highlight">0.1%</span> on total sale price</p>
 
         <!-- Share Profit Calculator -->
         <form id="shareForm">
@@ -96,59 +85,12 @@
             <p id="initialState"></p>
             <p id="finalState"></p>
             <p id="rawProfit"></p>
-            <p id="profit"></p>
+            <p id="feeAmount"></p>
+            <p id="finalProfit"></p>
         </div>
     </div>
 
     <script>
-        // Login function to fetch net worth
-        function loginUser() {
-            let apiKey = document.getElementById('apiKey').value;
-            if (!apiKey) {
-                alert("Please enter your Torn API key.");
-                return;
-            }
-
-            fetch(`https://api.torn.com/user/?selections=basic&key=${apiKey}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error) {
-                        alert("Invalid API Key. Try again.");
-                    } else {
-                        document.getElementById('userName').textContent = data.name;
-                        fetchNetworth(apiKey);
-                    }
-                })
-                .catch(error => console.error("API Error:", error));
-        }
-
-        // Fetch Networth & Suggest Investments
-        function fetchNetworth(apiKey) {
-            fetch(`https://api.torn.com/user/?selections=networth&key=${apiKey}`)
-                .then(response => response.json())
-                .then(data => {
-                    let networth = data.networth?.total || 0;
-                    document.getElementById('userNetworth').textContent = "$" + networth.toLocaleString();
-
-                    let advice = getInvestmentAdvice(networth);
-                    document.getElementById('investmentAdvice').textContent = advice;
-
-                    // Show dashboard
-                    document.getElementById('dashboard').style.display = 'block';
-                    document.getElementById('loginSection').style.display = 'none';
-                })
-                .catch(error => console.error("API Error:", error));
-        }
-
-        // Provide investment suggestions based on net worth
-        function getInvestmentAdvice(networth) {
-            if (networth >= 1000000000) return "You have a high net worth! Consider investing in stocks, company shares, or faction banks.";
-            if (networth >= 500000000) return "Your net worth is solid! Try buying bulk shares or property investments.";
-            if (networth >= 100000000) return "Consider investing in high-return stocks or faction investments.";
-            return "Your net worth is still growing. Stick to safer investments like reselling and small businesses.";
-        }
-
-        // Profit Calculation Function
         function calculateProfit() {
             var numShares = parseFloat(document.getElementById('numShares').value);
             var sharePrice = parseFloat(document.getElementById('sharePrice').value);
@@ -156,29 +98,27 @@
 
             var originalValue = numShares * sharePrice;
             var newValue = numShares * (sharePrice + increasePrice);
-            var profit = newValue - originalValue;
+            var rawProfit = newValue - originalValue;
 
-            var resultElement = document.getElementById('result');
-            var initialStateElement = document.getElementById('initialState');
-            var finalStateElement = document.getElementById('finalState');
-            var rawProfitElement = document.getElementById('rawProfit');
-            var profitElement = document.getElementById('profit');
+            var fee = newValue * 0.001; // 0.1% fee
+            var finalProfit = rawProfit - fee;
 
-            initialStateElement.textContent = `Initial: ${numShares} shares at $${sharePrice.toFixed(2)} each.`;
-            finalStateElement.textContent = `Final: ${numShares} shares at $${(sharePrice + increasePrice).toFixed(2)} each.`;
-            rawProfitElement.textContent = `Raw Profit: $${profit.toFixed(2)}`;
-
-            if (profit >= 1000000000) {
-                profitElement.textContent = `Profit: $${(profit / 1000000000).toFixed(2)} billion`;
-            } else if (profit >= 1000000) {
-                profitElement.textContent = `Profit: $${(profit / 1000000).toFixed(2)} million`;
-            } else if (profit >= 1000) {
-                profitElement.textContent = `Profit: $${(profit / 1000).toFixed(2)} thousand`;
+            document.getElementById('initialState').textContent = `Initial: ${numShares} shares at $${sharePrice.toFixed(2)} each.`;
+            document.getElementById('finalState').textContent = `Final: ${numShares} shares at $${(sharePrice + increasePrice).toFixed(2)} each.`;
+            document.getElementById('rawProfit').textContent = `Raw Profit: $${rawProfit.toFixed(2)}`;
+            document.getElementById('feeAmount').textContent = `Fee (0.1% of sale): $${fee.toFixed(2)}`;
+            
+            if (finalProfit >= 1000000000) {
+                document.getElementById('finalProfit').textContent = `Final Profit: $${(finalProfit / 1000000000).toFixed(2)} billion`;
+            } else if (finalProfit >= 1000000) {
+                document.getElementById('finalProfit').textContent = `Final Profit: $${(finalProfit / 1000000).toFixed(2)} million`;
+            } else if (finalProfit >= 1000) {
+                document.getElementById('finalProfit').textContent = `Final Profit: $${(finalProfit / 1000).toFixed(2)} thousand`;
             } else {
-                profitElement.textContent = `Profit: $${profit.toFixed(2)}`;
+                document.getElementById('finalProfit').textContent = `Final Profit: $${finalProfit.toFixed(2)}`;
             }
 
-            resultElement.style.display = 'block';
+            document.getElementById('result').style.display = 'block';
         }
     </script>
 </body>

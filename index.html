@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Share Profit Calculator</title>
     <style>
-        /* CSS for styling */
+        /* Green Theme */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
+            background-color: #1a3d1d; /* Dark green */
+            color: #ffffff;
         }
         .container {
             max-width: 600px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
+            background-color: #2b6b2f; /* Medium green */
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
         h1, h2 {
             text-align: center;
@@ -27,45 +28,70 @@
             margin-top: 20px;
             text-align: center;
         }
-        input[type="number"] {
+        input[type="number"], input[type="text"] {
             width: 100px;
             padding: 8px;
-            margin: 0 10px;
+            margin: 5px;
             border-radius: 4px;
             border: 1px solid #ccc;
+            background-color: #3c8a40;
+            color: white;
         }
         button {
             padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
+            background-color: #4caf50; /* Brighter green */
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
         button:hover {
-            background-color: #0056b3;
+            background-color: #45a049;
         }
-        #result {
+        #result, #dashboard {
             margin-top: 20px;
+            display: none;
+        }
+        #investmentAdvice {
+            font-weight: bold;
+            color: #ffeb3b;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Share Profit Calculator</h1>
+        
+        <!-- Login Section -->
+        <div id="loginSection">
+            <label for="apiKey">Enter Torn API Key:</label>
+            <input type="text" id="apiKey" placeholder="Your API Key">
+            <button onclick="loginUser()">Login</button>
+        </div>
+
+        <!-- Dashboard (Hidden initially) -->
+        <div id="dashboard">
+            <h2>Welcome, <span id="userName"></span>!</h2>
+            <p>Your Networth: <span id="userNetworth">$0</span></p>
+            <p id="investmentAdvice"></p>
+        </div>
+
+        <!-- Share Profit Calculator -->
         <form id="shareForm">
             <label for="numShares">Number of Shares:</label>
-            <input type="number" id="numShares" name="numShares" required>
+            <input type="number" id="numShares" required>
             <br>
             <label for="sharePrice">Current Share Price ($):</label>
-            <input type="number" id="sharePrice" name="sharePrice" step="0.01" required>
+            <input type="number" id="sharePrice" step="0.01" required>
             <br>
             <label for="increasePrice">Increase in Share Price ($):</label>
-            <input type="number" id="increasePrice" name="increasePrice" step="0.01" required>
+            <input type="number" id="increasePrice" step="0.01" required>
             <br>
             <button type="button" onclick="calculateProfit()">Calculate Profit</button>
         </form>
-        <div id="result" style="display: none;">
+        
+        <!-- Results -->
+        <div id="result">
             <h2>Result:</h2>
             <p id="initialState"></p>
             <p id="finalState"></p>
@@ -75,7 +101,54 @@
     </div>
 
     <script>
-        // JavaScript for calculating profit
+        // Login function to fetch net worth
+        function loginUser() {
+            let apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                alert("Please enter your Torn API key.");
+                return;
+            }
+
+            fetch(`https://api.torn.com/user/?selections=basic&key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert("Invalid API Key. Try again.");
+                    } else {
+                        document.getElementById('userName').textContent = data.name;
+                        fetchNetworth(apiKey);
+                    }
+                })
+                .catch(error => console.error("API Error:", error));
+        }
+
+        // Fetch Networth & Suggest Investments
+        function fetchNetworth(apiKey) {
+            fetch(`https://api.torn.com/user/?selections=networth&key=${apiKey}`)
+                .then(response => response.json())
+                .then(data => {
+                    let networth = data.networth?.total || 0;
+                    document.getElementById('userNetworth').textContent = "$" + networth.toLocaleString();
+
+                    let advice = getInvestmentAdvice(networth);
+                    document.getElementById('investmentAdvice').textContent = advice;
+
+                    // Show dashboard
+                    document.getElementById('dashboard').style.display = 'block';
+                    document.getElementById('loginSection').style.display = 'none';
+                })
+                .catch(error => console.error("API Error:", error));
+        }
+
+        // Provide investment suggestions based on net worth
+        function getInvestmentAdvice(networth) {
+            if (networth >= 1000000000) return "You have a high net worth! Consider investing in stocks, company shares, or faction banks.";
+            if (networth >= 500000000) return "Your net worth is solid! Try buying bulk shares or property investments.";
+            if (networth >= 100000000) return "Consider investing in high-return stocks or faction investments.";
+            return "Your net worth is still growing. Stick to safer investments like reselling and small businesses.";
+        }
+
+        // Profit Calculation Function
         function calculateProfit() {
             var numShares = parseFloat(document.getElementById('numShares').value);
             var sharePrice = parseFloat(document.getElementById('sharePrice').value);
@@ -91,36 +164,18 @@
             var rawProfitElement = document.getElementById('rawProfit');
             var profitElement = document.getElementById('profit');
 
-            initialStateElement.textContent = "Initial State: " + numShares + " shares at $" + sharePrice.toFixed(2) + " each.";
-            finalStateElement.textContent = "Final State: " + numShares + " shares at $" + (sharePrice + increasePrice).toFixed(2) + " each.";
+            initialStateElement.textContent = `Initial: ${numShares} shares at $${sharePrice.toFixed(2)} each.`;
+            finalStateElement.textContent = `Final: ${numShares} shares at $${(sharePrice + increasePrice).toFixed(2)} each.`;
+            rawProfitElement.textContent = `Raw Profit: $${profit.toFixed(2)}`;
 
-            rawProfitElement.textContent = "Raw Profit: $" + profit.toFixed(2); // Display raw profit
-
-            if (profit >= 0) {
-                if (profit >= 1000000000000) {
-                    profitElement.textContent = "Profit: $" + (profit / 1000000000000).toFixed(2) + " trillion";
-                } else if (profit >= 1000000000) {
-                    profitElement.textContent = "Profit: $" + (profit / 1000000000).toFixed(2) + " billion";
-                } else if (profit >= 1000000) {
-                    profitElement.textContent = "Profit: $" + (profit / 1000000).toFixed(2) + " million";
-                } else if (profit >= 1000) {
-                    profitElement.textContent = "Profit: $" + (profit / 1000).toFixed(2) + " thousand";
-                } else {
-                    profitElement.textContent = "Profit: $" + profit.toFixed(2);
-                }
+            if (profit >= 1000000000) {
+                profitElement.textContent = `Profit: $${(profit / 1000000000).toFixed(2)} billion`;
+            } else if (profit >= 1000000) {
+                profitElement.textContent = `Profit: $${(profit / 1000000).toFixed(2)} million`;
+            } else if (profit >= 1000) {
+                profitElement.textContent = `Profit: $${(profit / 1000).toFixed(2)} thousand`;
             } else {
-                profit = Math.abs(profit);
-                if (profit >= 1000000000000) {
-                    profitElement.textContent = "Loss: $" + (profit / 1000000000000).toFixed(2) + " trillion";
-                } else if (profit >= 1000000000) {
-                    profitElement.textContent = "Loss: $" + (profit / 1000000000).toFixed(2) + " billion";
-                } else if (profit >= 1000000) {
-                    profitElement.textContent = "Loss: $" + (profit / 1000000).toFixed(2) + " million";
-                } else if (profit >= 1000) {
-                    profitElement.textContent = "Loss: $" + (profit / 1000).toFixed(2) + " thousand";
-                } else {
-                    profitElement.textContent = "Loss: $" + profit.toFixed(2);
-                }
+                profitElement.textContent = `Profit: $${profit.toFixed(2)}`;
             }
 
             resultElement.style.display = 'block';

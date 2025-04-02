@@ -90,15 +90,15 @@
         <form id="shareForm">
             <div class="form-group">
                 <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested" oninput="handleInput(this)" onblur="autoComplete(this)">
+                <input type="text" id="moneyInvested">
             </div>
             <div class="form-group">
                 <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice" oninput="handleInput(this)" onblur="autoComplete(this)">
+                <input type="text" id="sharePrice">
             </div>
             <div class="form-group">
                 <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice" oninput="handleInput(this)" onblur="autoComplete(this)">
+                <input type="text" id="sellPrice">
             </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
@@ -106,8 +106,8 @@
         <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
-            <p>Profit/Loss: <span id="profit" class="text-green-500"></span></p>
-            <p>ROI: <span id="roi" class="text-green-500"></span></p>
+            <p>Profit/Loss: <span id="profit"></span></p>
+            <p>ROI: <span id="roi"></span></p>
         </div>
     </div>
 
@@ -165,6 +165,24 @@
         function loadTheme() {
             const theme = localStorage.getItem("theme") || "dark";
             setTheme(theme);
+        }
+
+        function calculateProfit() {
+            let invested = parseFloat(document.getElementById('moneyInvested').value) || 0;
+            let buyPrice = parseFloat(document.getElementById('sharePrice').value) || 0;
+            let sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+
+            if (!invested || !buyPrice || !sellPrice) return alert("Enter valid numbers");
+
+            let shares = invested / buyPrice;
+            let totalSold = shares * sellPrice;
+            let profit = totalSold - invested;
+            let roi = (profit / invested) * 100;
+
+            document.getElementById('totalInvested').textContent = `$${invested.toFixed(2)}`;
+            document.getElementById('profit').textContent = `$${profit.toFixed(2)}`;
+            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
+            document.getElementById('result').classList.remove('hidden');
         }
     </script>
 

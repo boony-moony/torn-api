@@ -190,7 +190,7 @@
             document.getElementById('soldShares').textContent = formatNumber(numShares);
             document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
             
-            // Apply color changes
+            // Apply color changes for profit and loss
             if (profit > 0) {
                 document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
                 document.getElementById('profit').classList.add('profit');

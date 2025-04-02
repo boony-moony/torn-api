@@ -71,11 +71,37 @@
         .hidden {
             display: none;
         }
+        .theme-menu {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: var(--card-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+        }
+        .theme-option {
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        .theme-option:hover {
+            opacity: 0.8;
+        }
+        .theme-divider {
+            height: 20px;
+        }
     </style>
 </head>
 <body onload="loadTheme()">
 
     <div class="container">
+        <button onclick="toggleThemeMenu()">Change Theme</button>
         <h1>Share Profit Calculator</h1>
         <form id="shareForm">
             <div class="form-group">
@@ -107,90 +133,54 @@
         </div>
     </div>
 
+    <div id="themeMenu" class="theme-menu">
+        <h2>Select Theme</h2>
+        <div class="theme-option" onclick="setTheme('dark')">Dark Mode</div>
+        <div class="theme-option" onclick="setTheme('blue')">Blue Mode</div>
+        <div class="theme-option" onclick="setTheme('green')">Green Mode</div>
+        <div class="theme-option" onclick="setTheme('red')">Red Mode</div>
+        <div class="theme-option" onclick="setTheme('sunset')">Sunset Mode</div>
+
+        <div class="theme-divider"></div>
+
+        <div class="theme-option" onclick="setTheme('light')">Light Mode</div>
+        <div class="theme-option" onclick="setTheme('blue-light')">Blue Light Mode</div>
+        <div class="theme-option" onclick="setTheme('green-light')">Green Light Mode</div>
+        <div class="theme-option" onclick="setTheme('red-light')">Red Light Mode</div>
+    </div>
+
     <script>
-        function formatNumber(num) {
-            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
-            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
-            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-            return num.toFixed(2);
+        function toggleThemeMenu() {
+            const menu = document.getElementById('themeMenu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
 
-        function parseInput(value) {
-            value = value.trim().toUpperCase();
+        function setTheme(theme) {
+            const themes = {
+                dark: { bg: "#1a202c", card: "#2d3748", text: "#ffffff", button: "#22c55e" },
+                blue: { bg: "#0d47a1", card: "#1976d2", text: "#ffffff", button: "#64b5f6" },
+                green: { bg: "#1b5e20", card: "#388e3c", text: "#ffffff", button: "#66bb6a" },
+                red: { bg: "#b71c1c", card: "#d32f2f", text: "#ffffff", button: "#e57373" },
+                sunset: { bg: "#ff9a8b", card: "#ff6a88", text: "#fff", button: "#ffc107" },
+                light: { bg: "#ffffff", card: "#f8f9fa", text: "#212529", button: "#007bff" },
+                "blue-light": { bg: "#e3f2fd", card: "#bbdefb", text: "#0d47a1", button: "#64b5f6" },
+                "green-light": { bg: "#e8f5e9", card: "#c8e6c9", text: "#1b5e20", button: "#66bb6a" },
+                "red-light": { bg: "#ffebee", card: "#ffcdd2", text: "#b71c1c", button: "#e57373" }
+            };
 
-            // Remove commas if they exist
-            value = value.replace(/,/g, '');
+            const selected = themes[theme];
+            document.documentElement.style.setProperty("--bg-color", selected.bg);
+            document.documentElement.style.setProperty("--card-color", selected.card);
+            document.documentElement.style.setProperty("--text-color", selected.text);
+            document.documentElement.style.setProperty("--button-color", selected.button);
 
-            // Match numeric part and suffix (K, M, B, T) with optional decimal
-            const regex = /^(\d*\.?\d+)([KMBT])?$/;
-            const match = value.match(regex);
-
-            if (match) {
-                let number = parseFloat(match[1]);
-                let multiplier = 1;
-
-                if (match[2] === 'T') multiplier = 1e12;
-                else if (match[2] === 'B') multiplier = 1e9;
-                else if (match[2] === 'M') multiplier = 1e6;
-                else if (match[2] === 'K') multiplier = 1e3;
-
-                return number * multiplier;
-            }
-
-            return 0;  // Default if the input does not match
+            localStorage.setItem("theme", theme);
+            toggleThemeMenu();
         }
 
-        function autoComplete(input) {
-            let rawValue = input.value;
-            let numericValue = parseInput(rawValue);
-            
-            if (numericValue) {
-                input.value = numericValue.toLocaleString();  // Format number with commas
-            }
-        }
-
-        function handleInput(input) {
-            let rawValue = input.value.trim().toUpperCase();
-
-            // Autocomplete immediately after input
-            if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
-                autoComplete(input);
-            }
-        }
-
-        function calculateProfit() {
-            let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
-            let sharePrice = parseInput(document.getElementById('sharePrice').value);
-            let sellPrice = parseInput(document.getElementById('sellPrice').value);
-
-            if (!moneyInvested || !sharePrice || !sellPrice) {
-                alert("Please enter valid numbers.");
-                return;
-            }
-
-            let totalInvested = moneyInvested;
-            let fee = sellPrice * 0.001;
-            let finalSellPrice = sellPrice - fee;
-            let sharesSold = moneyInvested / sharePrice;
-            let totalSold = sharesSold * finalSellPrice;
-            let profit = totalSold - totalInvested;
-            let roi = (profit / totalInvested) * 100;
-
-            document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
-            document.getElementById('investedAmount').textContent = formatNumber(moneyInvested);
-            document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
-            document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
-            document.getElementById('soldShares').textContent = formatNumber(sharesSold);
-            document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
-            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
-            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
-
-            // Profit/Loss Color Adjustment
-            document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
-            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
-
-            document.getElementById('result').classList.remove('hidden');
+        function loadTheme() {
+            const theme = localStorage.getItem("theme") || "dark";
+            setTheme(theme);
         }
     </script>
 

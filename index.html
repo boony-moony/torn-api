@@ -115,15 +115,15 @@
         <form id="shareForm">
             <div class="form-group">
                 <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested" oninput="handleInput(this)">
+                <input type="text" id="moneyInvested" oninput="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice" oninput="handleInput(this)">
+                <input type="text" id="sharePrice" oninput="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice" oninput="handleInput(this)">
+                <input type="text" id="sellPrice" oninput="autoComplete(this)">
             </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
@@ -163,9 +163,14 @@
             return parseFloat(value.replace(/[KMBT]/, '')) * multiplier || 0;
         }
 
-        function handleInput(input) {
-            let rawValue = input.value.toUpperCase();
-            input.value = rawValue.replace(/([0-9])([KMBT])/g, '$1.$2'); // Automatically add period between numbers and abbreviations
+        function autoComplete(input) {
+            let rawValue = input.value;
+            let lastChar = rawValue.charAt(rawValue.length - 1).toUpperCase();
+
+            if (['K', 'M', 'B', 'T'].includes(lastChar)) {
+                let numericValue = parseInput(rawValue);
+                input.value = numericValue.toLocaleString();
+            }
         }
 
         function calculateProfit() {

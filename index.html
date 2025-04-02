@@ -82,11 +82,13 @@
         <!-- Results -->
         <div id="result">
             <h2>Result:</h2>
-            <p id="initialState"></p>
-            <p id="finalState"></p>
-            <p id="rawProfit"></p>
-            <p id="feeAmount"></p>
-            <p id="finalProfit"></p>
+            <p><strong>Total Invested:</strong> <span id="totalInvested"></span></p>
+            <p><strong>Shares (when bought):</strong> <span id="sharesBought"></span></p>
+            <p><strong>Price per share (when bought):</strong> <span id="priceBought"></span></p>
+            <p><strong>Shares (when sold):</strong> <span id="sharesSold"></span></p>
+            <p><strong>Price per share (after 0.1% fee):</strong> <span id="priceAfterFee"></span></p>
+            <p><strong>Profit/Loss:</strong> <span id="profitLoss"></span></p>
+            <p><strong>ROI:</strong> <span id="roi"></span></p>
         </div>
     </div>
 
@@ -96,27 +98,35 @@
             var sharePrice = parseFloat(document.getElementById('sharePrice').value);
             var increasePrice = parseFloat(document.getElementById('increasePrice').value);
 
-            var originalValue = numShares * sharePrice;
-            var newValue = numShares * (sharePrice + increasePrice);
-            var rawProfit = newValue - originalValue;
+            var totalInvested = numShares * sharePrice;
+            var newPrice = sharePrice + increasePrice;
+            var totalValueBeforeFee = numShares * newPrice;
+            var fee = totalValueBeforeFee * 0.001; // 0.1% fee
+            var totalValueAfterFee = totalValueBeforeFee - fee;
+            var priceAfterFee = totalValueAfterFee / numShares;
+            var profitLoss = totalValueAfterFee - totalInvested;
+            var roi = (profitLoss / totalInvested) * 100;
 
-            var fee = newValue * 0.001; // 0.1% fee
-            var finalProfit = rawProfit - fee;
-
-            document.getElementById('initialState').textContent = `Initial: ${numShares} shares at $${sharePrice.toFixed(2)} each.`;
-            document.getElementById('finalState').textContent = `Final: ${numShares} shares at $${(sharePrice + increasePrice).toFixed(2)} each.`;
-            document.getElementById('rawProfit').textContent = `Raw Profit: $${rawProfit.toFixed(2)}`;
-            document.getElementById('feeAmount').textContent = `Fee (0.1% of sale): $${fee.toFixed(2)}`;
+            // Displaying values
+            document.getElementById('totalInvested').textContent = `$${totalInvested.toFixed(2)}`;
+            document.getElementById('sharesBought').textContent = numShares;
+            document.getElementById('priceBought').textContent = `$${sharePrice.toFixed(2)}`;
+            document.getElementById('sharesSold').textContent = numShares;
+            document.getElementById('priceAfterFee').textContent = `$${priceAfterFee.toFixed(2)}`;
             
-            if (finalProfit >= 1000000000) {
-                document.getElementById('finalProfit').textContent = `Final Profit: $${(finalProfit / 1000000000).toFixed(2)} billion`;
-            } else if (finalProfit >= 1000000) {
-                document.getElementById('finalProfit').textContent = `Final Profit: $${(finalProfit / 1000000).toFixed(2)} million`;
-            } else if (finalProfit >= 1000) {
-                document.getElementById('finalProfit').textContent = `Final Profit: $${(finalProfit / 1000).toFixed(2)} thousand`;
+            // Profit/Loss formatting
+            if (profitLoss >= 1000000000) {
+                document.getElementById('profitLoss').textContent = `$${(profitLoss / 1000000000).toFixed(2)} billion`;
+            } else if (profitLoss >= 1000000) {
+                document.getElementById('profitLoss').textContent = `$${(profitLoss / 1000000).toFixed(2)} million`;
+            } else if (profitLoss >= 1000) {
+                document.getElementById('profitLoss').textContent = `$${(profitLoss / 1000).toFixed(2)} thousand`;
             } else {
-                document.getElementById('finalProfit').textContent = `Final Profit: $${finalProfit.toFixed(2)}`;
+                document.getElementById('profitLoss').textContent = `$${profitLoss.toFixed(2)}`;
             }
+
+            // ROI formatting
+            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
 
             document.getElementById('result').style.display = 'block';
         }

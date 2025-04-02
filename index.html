@@ -10,17 +10,14 @@
             --bg-color-dark: #1a202c;
             --bg-color-light: #f7fafc;
             --card-color-dark: #2d3748;
-            --card-color-light: #ffffff;
+            --card-color-light: #edf2f7;
             --text-color-dark: #ffffff;
             --text-color-light: #1a202c;
-            --button-color-dark: #22c55e;
-            --button-color-light: #4CAF50;
+            --button-color: #22c55e;
             --input-bg-dark: #333;
-            --input-bg-light: #fff;
+            --input-bg-light: #ffffff;
             --input-border-dark: #555;
             --input-border-light: #ddd;
-            --button-hover-dark: #16a34a;
-            --button-hover-light: #45a049;
         }
 
         body {
@@ -39,7 +36,7 @@
             background-color: var(--card-color-dark);
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         h1, h2 {
@@ -64,23 +61,22 @@
             border: 1px solid var(--input-border-dark);
             text-align: center;
             font-size: 16px;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         button {
             width: 100%;
             padding: 10px;
-            background-color: var(--button-color-dark);
+            background-color: var(--button-color);
             color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            transition: background-color 0.3s ease;
         }
 
         button:hover {
-            background-color: var(--button-hover-dark);
+            opacity: 0.8;
         }
 
         #result {
@@ -94,76 +90,65 @@
             display: none;
         }
 
-        .theme-toggle-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: var(--button-color-dark);
-            color: white;
-            border-radius: 50%;
-            padding: 10px 15px;
+        .theme-switch-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin: 10px;
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
             cursor: pointer;
-        }
-
-        .theme-toggle-button:hover {
-            background-color: var(--button-hover-dark);
-        }
-
-        .theme-menu {
-            position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 1000;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
         }
 
-        .theme-menu.active {
-            display: flex;
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
         }
 
-        .theme-menu button {
-            width: 150px;
-            margin: 10px 0;
-            background-color: var(--button-color-dark);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
+        input:checked + .slider {
+            background-color: #22c55e;
         }
 
-        .theme-menu button:hover {
-            background-color: var(--button-hover-dark);
-        }
-
-        .theme-menu .mode-text {
-            color: white;
-            font-size: 18px;
+        input:checked + .slider:before {
+            transform: translateX(26px);
         }
     </style>
 </head>
-<body>
+<body onload="loadTheme()">
 
-    <!-- Theme Toggle Button -->
-    <div class="theme-toggle-button" onclick="openThemeMenu()">🌙</div>
-
-    <!-- Theme Menu -->
-    <div class="theme-menu" id="themeMenu">
-        <div class="mode-text">
-            <p>Dark Mode</p>
-            <button id="darkModeBtn" onclick="switchTheme('dark')">Switch to Dark Mode</button>
-        </div>
-        <div class="mode-text">
-            <p>Light Mode</p>
-            <button id="lightModeBtn" onclick="switchTheme('light')">Switch to Light Mode</button>
-        </div>
-        <button onclick="closeThemeMenu()">Close Menu</button>
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input type="checkbox" id="themeToggle" onclick="toggleTheme()">
+            <span class="slider"></span>
+        </label>
     </div>
 
     <div class="container">
@@ -183,7 +168,7 @@
             </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
-
+        
         <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
@@ -199,45 +184,6 @@
     </div>
 
     <script>
-        let isDarkMode = true;
-
-        function openThemeMenu() {
-            document.getElementById("themeMenu").classList.add("active");
-        }
-
-        function closeThemeMenu() {
-            document.getElementById("themeMenu").classList.remove("active");
-        }
-
-        function switchTheme(mode) {
-            if (mode === 'dark') {
-                document.body.style.backgroundColor = "#1a202c";
-                document.body.style.color = "#fff";
-                document.querySelector('.container').style.backgroundColor = "#2d3748";
-                document.querySelectorAll('input').forEach(input => input.style.backgroundColor = "#333");
-                document.querySelectorAll('input').forEach(input => input.style.borderColor = "#555");
-                document.querySelector('button').style.backgroundColor = "#22c55e";
-                document.querySelector('button').style.color = "#fff";
-                document.querySelector('.theme-toggle-button').style.backgroundColor = "#22c55e";
-                document.querySelector('.theme-toggle-button').innerText = "🌙";
-                document.getElementById("darkModeBtn").disabled = true;
-                document.getElementById("lightModeBtn").disabled = false;
-            } else {
-                document.body.style.backgroundColor = "#f7fafc";
-                document.body.style.color = "#1a202c";
-                document.querySelector('.container').style.backgroundColor = "#ffffff";
-                document.querySelectorAll('input').forEach(input => input.style.backgroundColor = "#fff");
-                document.querySelectorAll('input').forEach(input => input.style.borderColor = "#ddd");
-                document.querySelector('button').style.backgroundColor = "#4CAF50";
-                document.querySelector('button').style.color = "#fff";
-                document.querySelector('.theme-toggle-button').style.backgroundColor = "#4CAF50";
-                document.querySelector('.theme-toggle-button').innerText = "🌞";
-                document.getElementById("darkModeBtn").disabled = false;
-                document.getElementById("lightModeBtn").disabled = true;
-            }
-            closeThemeMenu();
-        }
-
         function formatNumber(num) {
             if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
             if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
@@ -248,7 +194,9 @@
 
         function parseInput(value) {
             value = value.trim().toUpperCase();
+
             value = value.replace(/,/g, '');
+
             const regex = /^(\d*\.?\d+)([KMBT])?$/;
             const match = value.match(regex);
 
@@ -263,12 +211,14 @@
 
                 return number * multiplier;
             }
+
             return 0;
         }
 
         function autoComplete(input) {
             let rawValue = input.value;
             let numericValue = parseInput(rawValue);
+            
             if (numericValue) {
                 input.value = numericValue.toLocaleString();
             }
@@ -276,6 +226,7 @@
 
         function handleInput(input) {
             let rawValue = input.value.trim().toUpperCase();
+
             if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
                 autoComplete(input);
             }
@@ -308,9 +259,64 @@
             document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
             document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
 
+            document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
+            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
+
             document.getElementById('result').classList.remove('hidden');
         }
-    </script>
 
+        function loadTheme() {
+            const isDark = localStorage.getItem('isDark') === 'true';
+            const themeToggle = document.getElementById('themeToggle');
+            themeToggle.checked = isDark;
+            applyTheme(isDark);
+        }
+
+        function toggleTheme() {
+            const isDark = document.getElementById('themeToggle').checked;
+            localStorage.setItem('isDark', isDark);
+            applyTheme(isDark);
+        }
+
+        function applyTheme(isDark) {
+            if (isDark) {
+                document.documentElement.style.setProperty('--bg-color-dark', '#1a202c');
+                document.documentElement.style.setProperty('--bg-color-light', '#f7fafc');
+                document.documentElement.style.setProperty('--card-color-dark', '#2d3748');
+                document.documentElement.style.setProperty('--card-color-light', '#edf2f7');
+                document.documentElement.style.setProperty('--text-color-dark', '#ffffff');
+                document.documentElement.style.setProperty('--text-color-light', '#1a202c');
+                document.documentElement.style.setProperty('--input-bg-dark', '#333');
+                document.documentElement.style.setProperty('--input-bg-light', '#ffffff');
+                document.documentElement.style.setProperty('--input-border-dark', '#555');
+                document.documentElement.style.setProperty('--input-border-light', '#ddd');
+                document.body.style.backgroundColor = 'var(--bg-color-dark)';
+                document.body.style.color = 'var(--text-color-dark)';
+                document.querySelector('.container').style.backgroundColor = 'var(--card-color-dark)';
+                document.querySelectorAll('input').forEach(input => {
+                    input.style.backgroundColor = 'var(--input-bg-dark)';
+                    input.style.borderColor = 'var(--input-border-dark)';
+                });
+            } else {
+                document.documentElement.style.setProperty('--bg-color-dark', '#f7fafc');
+                document.documentElement.style.setProperty('--bg-color-light', '#1a202c');
+                document.documentElement.style.setProperty('--card-color-dark', '#edf2f7');
+                document.documentElement.style.setProperty('--card-color-light', '#2d3748');
+                document.documentElement.style.setProperty('--text-color-dark', '#1a202c');
+                document.documentElement.style.setProperty('--text-color-light', '#ffffff');
+                document.documentElement.style.setProperty('--input-bg-dark', '#ffffff');
+                document.documentElement.style.setProperty('--input-bg-light', '#333');
+                document.documentElement.style.setProperty('--input-border-dark', '#ddd');
+                document.documentElement.style.setProperty('--input-border-light', '#555');
+                document.body.style.backgroundColor = 'var(--bg-color-light)';
+                document.body.style.color = 'var(--text-color-light)';
+                document.querySelector('.container').style.backgroundColor = 'var(--card-color-light)';
+                document.querySelectorAll('input').forEach(input => {
+                    input.style.backgroundColor = 'var(--input-bg-light)';
+                    input.style.borderColor = 'var(--input-border-light)';
+                });
+            }
+        }
+    </script>
 </body>
 </html>

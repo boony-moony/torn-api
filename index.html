@@ -117,7 +117,7 @@
             <p>Shares (Bought): <span id="boughtShares"></span></p>
             <p>Price per Share: <span id="boughtPrice"></span></p>
             <hr>
-            <p>Transaction Fee (0.1% per share): <span id="fee" class="fee"></span></p>
+            <p>Transaction Fee: <span id="fee" class="fee"></span></p>
             <p>Shares (Sold): <span id="soldShares"></span></p>
             <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
             <p>Profit/Loss: <span id="profit"></span></p>
@@ -186,7 +186,7 @@
             document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
             document.getElementById('boughtShares').textContent = formatNumber(numShares);
             document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
-            document.getElementById('fee').textContent = `$${formatNumber(feePerShare)} per share`;
+            document.getElementById('fee').textContent = 'Transaction Fee';  // Removed value per share
             document.getElementById('soldShares').textContent = formatNumber(numShares);
             document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
             

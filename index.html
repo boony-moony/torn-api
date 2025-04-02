@@ -11,6 +11,8 @@
             --card-color: #2d3748;
             --text-color: #ffffff;
             --button-color: #22c55e;
+            --input-bg: #333;
+            --input-border: #555;
         }
         body {
             background-color: var(--bg-color);
@@ -25,31 +27,37 @@
             padding: 20px;
             background-color: var(--card-color);
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
         }
         h1, h2 {
             text-align: center;
         }
         form {
             margin-top: 20px;
-            text-align: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
         }
         input {
-            width: 100px;
-            padding: 8px;
-            margin: 0 10px;
-            background-color: #333;
+            padding: 10px;
+            background-color: var(--input-bg);
             color: white;
-            border-radius: 4px;
-            border: 1px solid #555;
+            border-radius: 5px;
+            border: 1px solid var(--input-border);
+            text-align: center;
+            font-size: 16px;
         }
         button {
-            padding: 10px 20px;
+            width: 100%;
+            padding: 10px;
             background-color: var(--button-color);
             color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 16px;
         }
         button:hover {
             opacity: 0.8;
@@ -57,11 +65,11 @@
         #result {
             margin-top: 20px;
             padding: 15px;
-            background-color: #2d3748;
+            background-color: var(--card-color);
             border-radius: 8px;
         }
-        #themeMenu {
-            background-color: rgba(0, 0, 0, 0.6);
+        .hidden {
+            display: none;
         }
     </style>
 </head>
@@ -70,18 +78,22 @@
     <div class="container">
         <h1>Share Profit Calculator</h1>
         <form id="shareForm">
-            <label for="numShares">Number of Shares:</label>
-            <input type="text" id="numShares" name="numShares" oninput="handleInput(this)">
-            <br>
-            <label for="sharePrice">Purchase Price per Share ($):</label>
-            <input type="text" id="sharePrice" name="sharePrice" oninput="handleInput(this)">
-            <br>
-            <label for="sellPrice">Selling Price per Share ($):</label>
-            <input type="text" id="sellPrice" name="sellPrice" oninput="handleInput(this)">
-            <br>
+            <div class="form-group">
+                <label for="numShares">Number of Shares:</label>
+                <input type="text" id="numShares" oninput="handleInput(this)">
+            </div>
+            <div class="form-group">
+                <label for="sharePrice">Purchase Price per Share ($):</label>
+                <input type="text" id="sharePrice" oninput="handleInput(this)">
+            </div>
+            <div class="form-group">
+                <label for="sellPrice">Selling Price per Share ($):</label>
+                <input type="text" id="sellPrice" oninput="handleInput(this)">
+            </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
-        <div id="result" style="display: none;">
+        
+        <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
             <p>Shares (Bought): <span id="boughtShares"></span></p>
@@ -96,9 +108,9 @@
     </div>
 
     <!-- Hidden Theme Menu -->
-    <div id="themeMenu" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div id="themeMenu" class="hidden fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
         <div class="container">
-            <h3 class="text-lg font-bold mb-3 text-center text-white">Select Theme</h3>
+            <h3 class="text-lg font-bold mb-3 text-center">Select Theme</h3>
             <button onclick="changeTheme('dark')" class="w-full mb-2">Dark Mode</button>
             <button onclick="changeTheme('green')" class="w-full mb-2">Green Theme</button>
             <button onclick="changeTheme('purple')" class="w-full mb-2">Purple Theme</button>
@@ -162,7 +174,7 @@
             document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
             document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
 
-            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').classList.remove('hidden');
         }
 
         function changeTheme(theme) {

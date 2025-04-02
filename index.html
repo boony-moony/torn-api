@@ -108,11 +108,63 @@
         .theme-toggle-button:hover {
             background-color: var(--button-hover-dark);
         }
+
+        .theme-menu {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .theme-menu.active {
+            display: flex;
+        }
+
+        .theme-menu button {
+            width: 150px;
+            margin: 10px 0;
+            background-color: var(--button-color-dark);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .theme-menu button:hover {
+            background-color: var(--button-hover-dark);
+        }
+
+        .theme-menu .mode-text {
+            color: white;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="theme-toggle-button" onclick="toggleTheme()">🌙</div>
+    <!-- Theme Toggle Button -->
+    <div class="theme-toggle-button" onclick="openThemeMenu()">🌙</div>
+
+    <!-- Theme Menu -->
+    <div class="theme-menu" id="themeMenu">
+        <div class="mode-text">
+            <p>Dark Mode</p>
+            <button id="darkModeBtn" onclick="switchTheme('dark')">Switch to Dark Mode</button>
+        </div>
+        <div class="mode-text">
+            <p>Light Mode</p>
+            <button id="lightModeBtn" onclick="switchTheme('light')">Switch to Light Mode</button>
+        </div>
+        <button onclick="closeThemeMenu()">Close Menu</button>
+    </div>
 
     <div class="container">
         <h1>Share Profit Calculator</h1>
@@ -149,18 +201,16 @@
     <script>
         let isDarkMode = true;
 
-        function toggleTheme() {
-            if (isDarkMode) {
-                document.body.style.backgroundColor = "#f7fafc";
-                document.body.style.color = "#1a202c";
-                document.querySelector('.container').style.backgroundColor = "#ffffff";
-                document.querySelectorAll('input').forEach(input => input.style.backgroundColor = "#fff");
-                document.querySelectorAll('input').forEach(input => input.style.borderColor = "#ddd");
-                document.querySelector('button').style.backgroundColor = "#4CAF50";
-                document.querySelector('button').style.color = "#fff";
-                document.querySelector('.theme-toggle-button').style.backgroundColor = "#4CAF50";
-                document.querySelector('.theme-toggle-button').innerText = "🌞";
-            } else {
+        function openThemeMenu() {
+            document.getElementById("themeMenu").classList.add("active");
+        }
+
+        function closeThemeMenu() {
+            document.getElementById("themeMenu").classList.remove("active");
+        }
+
+        function switchTheme(mode) {
+            if (mode === 'dark') {
                 document.body.style.backgroundColor = "#1a202c";
                 document.body.style.color = "#fff";
                 document.querySelector('.container').style.backgroundColor = "#2d3748";
@@ -170,8 +220,22 @@
                 document.querySelector('button').style.color = "#fff";
                 document.querySelector('.theme-toggle-button').style.backgroundColor = "#22c55e";
                 document.querySelector('.theme-toggle-button').innerText = "🌙";
+                document.getElementById("darkModeBtn").disabled = true;
+                document.getElementById("lightModeBtn").disabled = false;
+            } else {
+                document.body.style.backgroundColor = "#f7fafc";
+                document.body.style.color = "#1a202c";
+                document.querySelector('.container').style.backgroundColor = "#ffffff";
+                document.querySelectorAll('input').forEach(input => input.style.backgroundColor = "#fff");
+                document.querySelectorAll('input').forEach(input => input.style.borderColor = "#ddd");
+                document.querySelector('button').style.backgroundColor = "#4CAF50";
+                document.querySelector('button').style.color = "#fff";
+                document.querySelector('.theme-toggle-button').style.backgroundColor = "#4CAF50";
+                document.querySelector('.theme-toggle-button').innerText = "🌞";
+                document.getElementById("darkModeBtn").disabled = false;
+                document.getElementById("lightModeBtn").disabled = true;
             }
-            isDarkMode = !isDarkMode;
+            closeThemeMenu();
         }
 
         function formatNumber(num) {
@@ -184,9 +248,7 @@
 
         function parseInput(value) {
             value = value.trim().toUpperCase();
-
             value = value.replace(/,/g, '');
-
             const regex = /^(\d*\.?\d+)([KMBT])?$/;
             const match = value.match(regex);
 
@@ -201,14 +263,12 @@
 
                 return number * multiplier;
             }
-
             return 0;
         }
 
         function autoComplete(input) {
             let rawValue = input.value;
             let numericValue = parseInput(rawValue);
-            
             if (numericValue) {
                 input.value = numericValue.toLocaleString();
             }
@@ -216,7 +276,6 @@
 
         function handleInput(input) {
             let rawValue = input.value.trim().toUpperCase();
-
             if (rawValue.match(/^(\d+(\.\d+)?)([KMBT])?$/)) {
                 autoComplete(input);
             }
@@ -246,15 +305,4 @@
             document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
             document.getElementById('soldShares').textContent = formatNumber(sharesSold);
             document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
-            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
-            document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
-
-            document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
-            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
-
-            document.getElementById('result').classList.remove('hidden');
-        }
-    </script>
-
-</body>
-</html>
+            document.getElementById('profit').text

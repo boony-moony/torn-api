@@ -86,6 +86,7 @@
             <p><strong>Shares (when bought):</strong> <span id="sharesBought"></span></p>
             <p><strong>Price per share (when bought):</strong> <span id="priceBought"></span></p>
             <p><strong>Shares (when sold):</strong> <span id="sharesSold"></span></p>
+            <p><strong>Transaction Fee (0.1%):</strong> <span id="feeAmount"></span></p>
             <p><strong>Price per share (after 0.1% fee):</strong> <span id="priceAfterFee"></span></p>
             <p><strong>Profit/Loss:</strong> <span id="profitLoss"></span></p>
             <p><strong>ROI:</strong> <span id="roi"></span></p>
@@ -112,6 +113,7 @@
             document.getElementById('sharesBought').textContent = numShares;
             document.getElementById('priceBought').textContent = `$${sharePrice.toFixed(2)}`;
             document.getElementById('sharesSold').textContent = numShares;
+            document.getElementById('feeAmount').textContent = `$${fee.toFixed(2)}`;
             document.getElementById('priceAfterFee').textContent = `$${priceAfterFee.toFixed(2)}`;
             
             // Profit/Loss formatting

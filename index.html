@@ -28,48 +28,21 @@
             background-color: var(--card-color);
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-        h1, h2 {
             text-align: center;
-        }
-        form {
-            margin-top: 20px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 10px;
-        }
-        input {
-            padding: 10px;
-            background-color: var(--input-bg);
-            color: white;
-            border-radius: 5px;
-            border: 1px solid var(--input-border);
-            text-align: center;
-            font-size: 16px;
         }
         button {
-            width: 100%;
-            padding: 10px;
+            width: auto;
+            padding: 10px 20px;
             background-color: var(--button-color);
             color: #fff;
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            margin-bottom: 10px;
         }
         button:hover {
             opacity: 0.8;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: var(--card-color);
-            border-radius: 8px;
-        }
-        .hidden {
-            display: none;
         }
         .theme-menu {
             display: none;
@@ -82,19 +55,31 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
             max-width: 300px;
+            text-align: center;
+            z-index: 1000;
         }
         .theme-option {
             padding: 10px;
-            text-align: center;
             cursor: pointer;
             border-radius: 5px;
             margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
         }
         .theme-option:hover {
             opacity: 0.8;
         }
         .theme-divider {
             height: 20px;
+        }
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
         }
     </style>
 </head>
@@ -103,35 +88,9 @@
     <div class="container">
         <button onclick="toggleThemeMenu()">Change Theme</button>
         <h1>Share Profit Calculator</h1>
-        <form id="shareForm">
-            <div class="form-group">
-                <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested" oninput="handleInput(this)" onblur="autoComplete(this)">
-            </div>
-            <div class="form-group">
-                <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice" oninput="handleInput(this)" onblur="autoComplete(this)">
-            </div>
-            <div class="form-group">
-                <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice" oninput="handleInput(this)" onblur="autoComplete(this)">
-            </div>
-            <button type="button" onclick="calculateProfit()">Calculate</button>
-        </form>
-        
-        <div id="result" class="hidden">
-            <h2>Results</h2>
-            <p>Total Invested: <span id="totalInvested"></span></p>
-            <p>Money Invested: <span id="investedAmount"></span></p>
-            <p>Price per Share: <span id="boughtPrice"></span></p>
-            <hr>
-            <p>Transaction Fee (0.1% per share): <span id="fee" class="text-yellow-500"></span></p>
-            <p>Shares Sold: <span id="soldShares"></span></p>
-            <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
-            <p>Profit/Loss: <span id="profit" class="text-green-500"></span></p>
-            <p>ROI: <span id="roi" class="text-green-500"></span></p>
-        </div>
     </div>
+
+    <div class="overlay" id="overlay" onclick="toggleThemeMenu()"></div>
 
     <div id="themeMenu" class="theme-menu">
         <h2>Select Theme</h2>
@@ -152,7 +111,11 @@
     <script>
         function toggleThemeMenu() {
             const menu = document.getElementById('themeMenu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            const overlay = document.getElementById('overlay');
+            const isVisible = menu.style.display === 'block';
+
+            menu.style.display = isVisible ? 'none' : 'block';
+            overlay.style.display = isVisible ? 'none' : 'block';
         }
 
         function setTheme(theme) {

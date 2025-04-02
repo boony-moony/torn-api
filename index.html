@@ -177,7 +177,7 @@
             }
 
             let totalInvested = numShares * sharePrice;
-            let fee = sellPrice * 0.001;
+            let fee = sellPrice * 0.001;  // 0.1% fee
             let finalSellPrice = sellPrice - fee;
             let totalSold = numShares * finalSellPrice;
             let profit = totalSold - totalInvested;

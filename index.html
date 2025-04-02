@@ -39,13 +39,6 @@
             display: flex;
             flex-direction: column;
             margin-bottom: 10px;
-            text-align: center;
-            align-items: center;
-        }
-        label {
-            margin-bottom: 5px;
-            font-size: 16px;
-            text-align: center;
         }
         input {
             padding: 10px;
@@ -55,8 +48,6 @@
             border: 1px solid var(--input-border);
             text-align: center;
             font-size: 16px;
-            max-width: 300px;
-            width: 100%;
         }
         button {
             width: 100%;
@@ -80,33 +71,24 @@
         .hidden {
             display: none;
         }
-        .profit {
-            color: #22c55e;
-        }
-        .loss {
-            color: #ef4444;
-        }
-        .fee {
-            color: #facc15;
-        }
     </style>
 </head>
-<body>
+<body onload="loadTheme()">
 
     <div class="container">
         <h1>Share Profit Calculator</h1>
         <form id="shareForm">
             <div class="form-group">
                 <label for="moneyInvested">Money Invested ($):</label>
-                <input type="text" id="moneyInvested" oninput="autoComplete(this)">
+                <input type="text" id="moneyInvested" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sharePrice">Purchase Price per Share ($):</label>
-                <input type="text" id="sharePrice" oninput="autoComplete(this)">
+                <input type="text" id="sharePrice" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <div class="form-group">
                 <label for="sellPrice">Selling Price per Share ($):</label>
-                <input type="text" id="sellPrice" oninput="autoComplete(this)">
+                <input type="text" id="sellPrice" oninput="handleInput(this)" onblur="autoComplete(this)">
             </div>
             <button type="button" onclick="calculateProfit()">Calculate</button>
         </form>
@@ -114,14 +96,14 @@
         <div id="result" class="hidden">
             <h2>Results</h2>
             <p>Total Invested: <span id="totalInvested"></span></p>
-            <p>Shares (Bought): <span id="boughtShares"></span></p>
+            <p>Money Invested: <span id="investedAmount"></span></p>
             <p>Price per Share: <span id="boughtPrice"></span></p>
             <hr>
-            <p>Transaction Fee: <span id="fee" class="fee"></span></p>
-            <p>Shares (Sold): <span id="soldShares"></span></p>
+            <p>Transaction Fee (0.1% per share): <span id="fee" class="text-yellow-500"></span></p>
+            <p>Shares Sold: <span id="soldShares"></span></p>
             <p>Price per Share (After Fee): <span id="soldPrice"></span></p>
-            <p>Profit/Loss: <span id="profit"></span></p>
-            <p>ROI: <span id="roi"></span></p>
+            <p>Profit/Loss: <span id="profit" class="text-green-500"></span></p>
+            <p>ROI: <span id="roi" class="text-green-500"></span></p>
         </div>
     </div>
 
@@ -135,40 +117,46 @@
         }
 
         function parseInput(value) {
-    value = value.trim().toUpperCase();
+            value = value.trim().toUpperCase();
 
-    // Remove commas if they exist
-    value = value.replace(/,/g, '');
+            // Remove commas if they exist
+            value = value.replace(/,/g, '');
 
-    // Match numeric part and suffix (K, M, B, T) with optional decimal
-    const regex = /^(\d*\.?\d+)([KMBT])?$/;
-    const match = value.match(regex);
+            // Match numeric part and suffix (K, M, B, T) with optional decimal
+            const regex = /^(\d*\.?\d+)([KMBT])?$/;
+            const match = value.match(regex);
 
-    if (match) {
-        let number = parseFloat(match[1]);
-        let multiplier = 1;
+            if (match) {
+                let number = parseFloat(match[1]);
+                let multiplier = 1;
 
-        if (match[2] === 'T') multiplier = 1e12;
-        else if (match[2] === 'B') multiplier = 1e9;
-        else if (match[2] === 'M') multiplier = 1e6;
-        else if (match[2] === 'K') multiplier = 1e3;
+                if (match[2] === 'T') multiplier = 1e12;
+                else if (match[2] === 'B') multiplier = 1e9;
+                else if (match[2] === 'M') multiplier = 1e6;
+                else if (match[2] === 'K') multiplier = 1e3;
 
-        return number * multiplier;
-    }
+                return number * multiplier;
+            }
 
-    return 0;  // Default if the input does not match
-}
+            return 0;  // Default if the input does not match
+        }
 
-function autoComplete(input) {
-    let rawValue = input.value;
-    let numericValue = parseInput(rawValue);
-    
-    if (numericValue) {
-        input.value = numericValue.toLocaleString();  // This will format the number without commas
-    }
-}
+        function autoComplete(input) {
+            let rawValue = input.value;
+            let numericValue = parseInput(rawValue);
+            
+            if (numericValue) {
+                input.value = numericValue.toLocaleString();  // Format number without commas
+            }
+        }
 
-}
+        function handleInput(input) {
+            let rawValue = input.value.toUpperCase();
+            if (rawValue === "THEME") {
+                document.getElementById("themeMenu").classList.remove("hidden");
+                input.value = "";
+            }
+        }
 
         function calculateProfit() {
             let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
@@ -181,31 +169,25 @@ function autoComplete(input) {
             }
 
             let totalInvested = moneyInvested;
-            let feePerShare = sellPrice * 0.001;  // 0.1% fee per share
-            let finalSellPrice = sellPrice - feePerShare;
-            let totalSold = moneyInvested / sharePrice * finalSellPrice;
+            let fee = sellPrice * 0.001;
+            let finalSellPrice = sellPrice - fee;
+            let sharesSold = moneyInvested / sharePrice;
+            let totalSold = sharesSold * finalSellPrice;
             let profit = totalSold - totalInvested;
             let roi = (profit / totalInvested) * 100;
 
             document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
-            document.getElementById('boughtShares').textContent = formatNumber(moneyInvested / sharePrice);
+            document.getElementById('investedAmount').textContent = formatNumber(moneyInvested);
             document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
-            document.getElementById('fee').textContent = 'Transaction Fee';  // Removed value per share
-            document.getElementById('soldShares').textContent = formatNumber(moneyInvested / sharePrice);
+            document.getElementById('fee').textContent = `${formatNumber(fee)} per share`;
+            document.getElementById('soldShares').textContent = formatNumber(sharesSold);
             document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
-            
-            // Apply color changes for profit and loss
-            if (profit > 0) {
-                document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
-                document.getElementById('profit').classList.add('profit');
-                document.getElementById('profit').classList.remove('loss');
-            } else {
-                document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
-                document.getElementById('profit').classList.add('loss');
-                document.getElementById('profit').classList.remove('profit');
-            }
-
+            document.getElementById('profit').textContent = `$${formatNumber(profit)}`;
             document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
+
+            // Profit/Loss Color Adjustment
+            document.getElementById('profit').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
+            document.getElementById('roi').className = profit >= 0 ? 'text-green-500' : 'text-red-500';
 
             document.getElementById('result').classList.remove('hidden');
         }

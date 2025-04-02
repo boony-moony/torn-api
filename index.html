@@ -156,6 +156,9 @@
                 document.getElementById("themeMenu").classList.remove("hidden");
                 input.value = "";
             }
+
+            // Autocomplete immediately after input
+            autoComplete(input);
         }
 
         function calculateProfit() {

@@ -135,35 +135,40 @@
         }
 
         function parseInput(value) {
-            value = value.trim().toUpperCase();
+    value = value.trim().toUpperCase();
 
-            // Match numeric part and suffix (K, M, B, T) with optional decimal
-            const regex = /^(\d*\.?\d+)([KMBT])?$/;
-            const match = value.match(regex);
+    // Remove commas if they exist
+    value = value.replace(/,/g, '');
 
-            if (match) {
-                let number = parseFloat(match[1]);
-                let multiplier = 1;
+    // Match numeric part and suffix (K, M, B, T) with optional decimal
+    const regex = /^(\d*\.?\d+)([KMBT])?$/;
+    const match = value.match(regex);
 
-                if (match[2] === 'T') multiplier = 1e12;
-                else if (match[2] === 'B') multiplier = 1e9;
-                else if (match[2] === 'M') multiplier = 1e6;
-                else if (match[2] === 'K') multiplier = 1e3;
+    if (match) {
+        let number = parseFloat(match[1]);
+        let multiplier = 1;
 
-                return number * multiplier;
-            }
+        if (match[2] === 'T') multiplier = 1e12;
+        else if (match[2] === 'B') multiplier = 1e9;
+        else if (match[2] === 'M') multiplier = 1e6;
+        else if (match[2] === 'K') multiplier = 1e3;
 
-            return 0;  // Default if the input does not match
-        }
+        return number * multiplier;
+    }
 
-        function autoComplete(input) {
-            let rawValue = input.value;
-            let numericValue = parseInput(rawValue);
-            
-            if (numericValue) {
-                input.value = numericValue.toLocaleString();
-            }
-        }
+    return 0;  // Default if the input does not match
+}
+
+function autoComplete(input) {
+    let rawValue = input.value;
+    let numericValue = parseInput(rawValue);
+    
+    if (numericValue) {
+        input.value = numericValue.toLocaleString();  // This will format the number without commas
+    }
+}
+
+}
 
         function calculateProfit() {
             let moneyInvested = parseInput(document.getElementById('moneyInvested').value);

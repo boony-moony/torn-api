@@ -89,16 +89,33 @@
         .fee {
             color: #facc15;
         }
+        .derivate-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .derivate-btn:hover {
+            opacity: 0.8;
+        }
     </style>
 </head>
-<body onload="loadTheme()">
+<body>
+
+    <!-- Derivate Button -->
+    <button class="derivate-btn">Derivate</button>
 
     <div class="container">
         <h1>Share Profit Calculator</h1>
         <form id="shareForm">
             <div class="form-group">
-                <label for="numShares">Number of Shares:</label>
-                <input type="text" id="numShares" oninput="handleInput(this)">
+                <label for="moneyInvested">Money Invested ($):</label>
+                <input type="text" id="moneyInvested" oninput="handleInput(this)">
             </div>
             <div class="form-group">
                 <label for="sharePrice">Purchase Price per Share ($):</label>
@@ -125,18 +142,6 @@
         </div>
     </div>
 
-    <!-- Hidden Theme Menu -->
-    <div id="themeMenu" class="hidden fixed inset-0 flex justify-center items-center bg-black bg-opacity-50">
-        <div class="container">
-            <h3 class="text-lg font-bold mb-3 text-center">Select Theme</h3>
-            <button onclick="changeTheme('dark')" class="w-full mb-2">Dark Mode</button>
-            <button onclick="changeTheme('green')" class="w-full mb-2">Green Theme</button>
-            <button onclick="changeTheme('purple')" class="w-full mb-2">Purple Theme</button>
-            <button onclick="changeTheme('red')" class="w-full mb-2">Red Theme</button>
-            <button onclick="changeTheme('blue')" class="w-full">Blue Theme</button>
-        </div>
-    </div>
-
     <script>
         function formatNumber(num) {
             if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
@@ -160,34 +165,31 @@
 
         function handleInput(input) {
             let rawValue = input.value.toUpperCase();
-            if (rawValue === "THEME") {
-                document.getElementById("themeMenu").classList.remove("hidden");
-                input.value = "";
-            }
+            input.value = rawValue.replace(/([0-9])([KMBT])/g, '$1.$2'); // Automatically add period between numbers and abbreviations
         }
 
         function calculateProfit() {
-            let numShares = parseInput(document.getElementById('numShares').value);
+            let moneyInvested = parseInput(document.getElementById('moneyInvested').value);
             let sharePrice = parseInput(document.getElementById('sharePrice').value);
             let sellPrice = parseInput(document.getElementById('sellPrice').value);
 
-            if (!numShares || !sharePrice || !sellPrice) {
+            if (!moneyInvested || !sharePrice || !sellPrice) {
                 alert("Please enter valid numbers.");
                 return;
             }
 
-            let totalInvested = numShares * sharePrice;
+            let totalInvested = moneyInvested;
             let feePerShare = sellPrice * 0.001;  // 0.1% fee per share
             let finalSellPrice = sellPrice - feePerShare;
-            let totalSold = numShares * finalSellPrice;
+            let totalSold = moneyInvested / sharePrice * finalSellPrice;
             let profit = totalSold - totalInvested;
             let roi = (profit / totalInvested) * 100;
 
             document.getElementById('totalInvested').textContent = `$${formatNumber(totalInvested)}`;
-            document.getElementById('boughtShares').textContent = formatNumber(numShares);
+            document.getElementById('boughtShares').textContent = formatNumber(moneyInvested / sharePrice);
             document.getElementById('boughtPrice').textContent = `$${formatNumber(sharePrice)}`;
             document.getElementById('fee').textContent = 'Transaction Fee';  // Removed value per share
-            document.getElementById('soldShares').textContent = formatNumber(numShares);
+            document.getElementById('soldShares').textContent = formatNumber(moneyInvested / sharePrice);
             document.getElementById('soldPrice').textContent = `$${formatNumber(finalSellPrice)}`;
             
             // Apply color changes for profit and loss
@@ -204,29 +206,6 @@
             document.getElementById('roi').textContent = `${roi.toFixed(2)}%`;
 
             document.getElementById('result').classList.remove('hidden');
-        }
-
-        function changeTheme(theme) {
-            localStorage.setItem("selectedTheme", theme);
-            let themes = {
-                dark: { bg: '#1a202c', card: '#2d3748', button: '#22c55e' },
-                green: { bg: '#1b3a1b', card: '#3e6e3e', button: '#32c74d' },
-                purple: { bg: '#2b1e3a', card: '#3b2a54', button: '#7b63e1' },
-                red: { bg: '#3c0d0d', card: '#5a1a1a', button: '#d36e6e' },
-                blue: { bg: '#0d1a3c', card: '#1f3e5f', button: '#4a90e2' }
-            };
-
-            let selected = themes[theme] || themes.dark;
-            document.documentElement.style.setProperty('--bg-color', selected.bg);
-            document.documentElement.style.setProperty('--card-color', selected.card);
-            document.documentElement.style.setProperty('--button-color', selected.button);
-
-            document.getElementById("themeMenu").classList.add("hidden");
-        }
-
-        function loadTheme() {
-            let savedTheme = localStorage.getItem("selectedTheme");
-            if (savedTheme) changeTheme(savedTheme);
         }
     </script>
 
